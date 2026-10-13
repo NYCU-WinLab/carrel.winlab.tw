@@ -1,6 +1,7 @@
 import { AppShell } from "@/components/app-shell"
 import { CarrelDemo } from "@/components/carrel-demo"
-import { Figure } from "@/components/figure"
+import { CarrelFigure } from "@/components/carrel-figure"
+import { ClusterStatus } from "@/components/cluster-status"
 import { InstallSteps } from "@/components/install-steps"
 
 export default function Page() {
@@ -15,6 +16,7 @@ export default function Page() {
         { label: "Carrel", href: "/", tip: "實驗室的機器" },
       ]}
       nav={[
+        { label: "狀態", href: "#status", tip: "叢集用量與每人分配" },
         { label: "安裝", href: "#install", tip: "在 Claude Code 裝好 Carrel" },
         {
           label: "GitHub",
@@ -35,7 +37,12 @@ export default function Page() {
 
         <section className="flex flex-col gap-6">
           <h2 className="font-semibold">每人 8 台</h2>
-          <Figure />
+          <CarrelFigure />
+        </section>
+
+        <section id="status" className="flex scroll-mt-24 flex-col gap-6">
+          <h2 className="font-semibold">叢集狀態</h2>
+          <ClusterStatus />
         </section>
 
         <section id="install" className="flex scroll-mt-24 flex-col gap-6">
