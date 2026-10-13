@@ -4,7 +4,7 @@ import * as React from "react"
 
 import { demos, type Demo, type Run } from "@/lib/demos"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { T, Terminal } from "@/components/terminal/terminal"
+import { TerminalText as T, Terminal } from "@/components/ui/terminal"
 import {
   Done,
   InputBox,
@@ -15,7 +15,9 @@ import {
   Spinner,
   ToolUse,
   Welcome,
-} from "@/components/terminal/claude-code"
+} from "@/components/claude-code"
+
+const MCP = "plugin:infrastructure:carrel"
 
 // One turn, as a timeline. Each step lasts `ms`; the screen is a function of
 // the step and how far into it we are.
@@ -66,7 +68,7 @@ function Turn({ demo, step, t }: { demo: Demo; step: Step; t: number }) {
   return (
     <>
       {at >= 1 && <Prompt>{demo.prompt}</Prompt>}
-      {at >= 2 && at !== 2 && <McpCall done={at >= 4} />}
+      {at >= 2 && at !== 2 && <McpCall server={MCP} done={at >= 4} />}
       {at >= 4 && <Reply lines={demo.reply.slice(0, shown).map(runs)} />}
       {(at === 1 || at === 3) && (
         <Spinner verb={demo.verb[0]} seconds={seconds} tokens={tokens} />
@@ -75,7 +77,7 @@ function Turn({ demo, step, t }: { demo: Demo; step: Step; t: number }) {
         <Done verb={demo.verb[1]} seconds={demo.seconds} time="10:18 PM" />
       )}
       {at === 2 ? (
-        <ToolUse tool={demo.tool} about={demo.about} />
+        <ToolUse server={MCP} tool={demo.tool} about={demo.about} />
       ) : (
         <InputBox
           value={typed || undefined}
@@ -168,7 +170,7 @@ function CarrelDemo() {
           </TabsList>
         </Tabs>
       </div>
-      <Terminal title="~/demo — claude" className="t-screen">
+      <Terminal title="~/demo — claude" className="h-144 sm:h-160">
         <Welcome />
         <Screen>
           <Turn demo={demo} step={still ? "rest" : step} t={still ? 0 : t} />

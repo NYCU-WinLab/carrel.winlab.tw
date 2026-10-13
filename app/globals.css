@@ -56,6 +56,36 @@
       opacity: 0;
     }
   }
+  --color-terminal: #0d0d0d;
+  --color-terminal-bar: #1a1a1a;
+  --color-terminal-line: #262626;
+  --color-terminal-foreground: #e4e4e4;
+  --color-terminal-claude: #d78787;
+  --color-terminal-shimmer: #ffaf87;
+  --color-terminal-dim: #949494;
+  --color-terminal-rule: #808080;
+  --color-terminal-soft: #a8a8a8;
+  --color-terminal-warn: #ffd700;
+  --color-terminal-select: #afd7ff;
+  --color-terminal-error: #ff87af;
+  --color-terminal-white: #ffffff;
+  --color-terminal-prompt: #3a3a3a;
+  --color-terminal-success: #87d787;
+  --color-color-terminal-success: var(--color-terminal-success);
+  --color-color-terminal-prompt: var(--color-terminal-prompt);
+  --color-color-terminal-white: var(--color-terminal-white);
+  --color-color-terminal-error: var(--color-terminal-error);
+  --color-color-terminal-select: var(--color-terminal-select);
+  --color-color-terminal-warn: var(--color-terminal-warn);
+  --color-color-terminal-soft: var(--color-terminal-soft);
+  --color-color-terminal-rule: var(--color-terminal-rule);
+  --color-color-terminal-dim: var(--color-terminal-dim);
+  --color-color-terminal-shimmer: var(--color-terminal-shimmer);
+  --color-color-terminal-claude: var(--color-terminal-claude);
+  --color-color-terminal-foreground: var(--color-terminal-foreground);
+  --color-color-terminal-line: var(--color-terminal-line);
+  --color-color-terminal-bar: var(--color-terminal-bar);
+  --color-color-terminal: var(--color-terminal);
 }
 
 :root {
@@ -316,4 +346,22 @@
   .digit-roll {
     transition: none;
   }
+}
+
+@utility indent-* {
+  padding-inline-start: calc(--value(integer) * 1ch);
+}
+
+@utility cell-wide {
+  display: inline-block;
+  width: 2ch;
+  text-align: center;
+}
+
+@utility w-cells-* {
+  width: calc(--value(integer) * 1ch);
+}
+
+@utility gap-cells-* {
+  column-gap: calc(--value(integer) * 1ch);
 }

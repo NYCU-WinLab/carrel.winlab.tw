@@ -1,6 +1,10 @@
 import * as React from "react"
 
-import { Line, T, Terminal } from "@/components/terminal/terminal"
+import {
+  TerminalLine as Line,
+  TerminalText as T,
+  Terminal,
+} from "@/components/ui/terminal"
 import {
   Choices,
   Field,
@@ -13,7 +17,7 @@ import {
   Prompt,
   Screen,
   Welcome,
-} from "@/components/terminal/claude-code"
+} from "@/components/claude-code"
 
 // The four install screens, as Claude Code draws them. Wording comes from
 // Claude Code 2.1.296; the marketplace row is the one WinLab's claude.ai
@@ -48,10 +52,10 @@ function MarketplacesScreen() {
       <Prompt>/plugins</Prompt>
       <Menu hint="Enter to select · u to update · d to remove · Esc to go back">
         <PluginTabs current="Marketplaces" />
-        <Line indent={2} className="t-blank-below">
+        <Line indent={2} className="pb-5">
           <T bold>Manage marketplaces</T>
         </Line>
-        <Line indent={2} className="t-blank-below">
+        <Line indent={2} className="pb-5">
           {"  "}
           <T tone="select">+</T>{" "}
           <T tone="select" bold>
@@ -88,7 +92,7 @@ function PluginScreen() {
       <Prompt>/plugins</Prompt>
       <Menu hint="Enter to select · Esc to go back">
         <PluginTabs current="Marketplaces" />
-        <Line indent={2} className="t-blank-below">
+        <Line indent={2} className="pb-5">
           <T bold>Plugin Details</T>
         </Line>
         <Line indent={2}>
@@ -99,13 +103,13 @@ function PluginScreen() {
           carrel MCP server, plus B09 SSH ProxyJump access, connection
           troubleshooting, port forwarding and VPN guidance.
         </Line>
-        <Line indent={2} className="t-blank-below">
+        <Line indent={2} className="pb-5">
           <T tone="dim">By: NYCU WinLab</T>
         </Line>
         <Line indent={2}>
           <T bold>Will install:</T>
         </Line>
-        <Line indent={2} className="t-blank-below">
+        <Line indent={2} className="pb-5">
           <T tone="dim">· Components will be discovered at installation</T>
         </Line>
         <Choices
@@ -128,10 +132,10 @@ function McpScreen() {
     <Terminal title="~/demo — claude">
       <Welcome />
       <Notice hint="run /mcp">1 MCP server needs authentication</Notice>
-      <div className="t-blank-below" />
+      <div className="pb-5" />
       <Prompt>/mcp</Prompt>
       <Menu hint="↑/↓ to navigate · Enter to select · Esc to back">
-        <Line indent={2} className="t-blank-below">
+        <Line indent={2} className="pb-5">
           <T tone="select" bold>
             Plugin:infrastructure:carrel MCP Server
           </T>
@@ -148,7 +152,7 @@ function McpScreen() {
         <Field name="Config location:">
           <T tone="dim">Dynamically configured</T>
         </Field>
-        <div className="t-blank-below" />
+        <div className="pb-5" />
         <Choices items={["Authenticate", "Disable"]} choice={0} />
       </Menu>
     </Terminal>
