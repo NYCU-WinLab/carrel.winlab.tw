@@ -47,6 +47,31 @@ type Tone =
   | "white"
   | "success"
 
+// East Asian wide characters take two cells in a terminal. Web fonts draw
+// them narrower, so each one gets a two-cell box to keep the grid.
+const WIDE =
+  /([\u1100-\u115F\u2E80-\u303E\u3041-\u33FF\u3400-\u4DBF\u4E00-\u9FFF\uA960-\uA97F\uAC00-\uD7A3\uF900-\uFAFF\uFE30-\uFE4F\uFF00-\uFF60\uFFE0-\uFFE6]+)/
+
+function cells(node: React.ReactNode): React.ReactNode {
+  if (typeof node === "string") {
+    if (!WIDE.test(node)) return node
+    return node.split(WIDE).map((part, index) =>
+      index % 2 === 1
+        ? Array.from(part).map((char, i) => (
+            <span key={`${index}-${i}`} className="t-wide">
+              {char}
+            </span>
+          ))
+        : part
+    )
+  }
+  if (Array.isArray(node))
+    return node.map((child, index) => (
+      <React.Fragment key={index}>{cells(child)}</React.Fragment>
+    ))
+  return node
+}
+
 // One run of styled text, the way a terminal writes it.
 function T({
   tone,
@@ -76,7 +101,7 @@ function T({
         className
       )}
     >
-      {children}
+      {cells(children)}
     </span>
   )
 }
@@ -94,12 +119,12 @@ function Line({
   return (
     <div
       className={cn(
-        "min-h-6 break-words whitespace-pre-wrap",
+        "t-row break-words whitespace-pre-wrap",
         indent > 0 && `t-i${indent}`,
         className
       )}
     >
-      {children}
+      {cells(children)}
     </div>
   )
 }
