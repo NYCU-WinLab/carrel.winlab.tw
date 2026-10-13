@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<div align="center">
 
-## Getting Started
+<h1>carrel.winlab.tw</h1>
 
-First, run the development server:
+<p>The page that shows WinLab members what Carrel does and how to install it in Claude Code.</p>
+
+<p>
+<a href="https://github.com/NYCU-WinLab/carrel.winlab.tw/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/NYCU-WinLab/carrel.winlab.tw/actions/workflows/ci.yml/badge.svg"></a>
+<a href="https://carrel.winlab.tw"><img alt="Live" src="https://img.shields.io/badge/live-carrel.winlab.tw-0033A0"></a>
+</p>
+
+</div>
+
+## What it shows
+
+- A Claude Code window that plays short turns: open a machine, publish a site, add a database, save a snapshot, pause.
+- A figure of the 8 machines each member gets, drawn as a row of study carrels.
+- The install steps: `/plugins`, the `claudeai-nycu-winlab-marketplace`, the `infrastructure` plugin, then `/mcp` sign-in.
+
+Carrel itself lives in [NYCU-WinLab/carrel](https://github.com/NYCU-WinLab/carrel).
+
+## Quick start
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+bun install
+bun run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## How it works
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Next.js static export, served by nginx in one image.
+- Components come from the WinLab registry at [ui.winlab.tw](https://ui.winlab.tw).
+- `components/terminal/` redraws Claude Code's screen with HTML. The look follows a real Claude Code run with an empty config. The content comes from props and `lib/demos.ts`.
+- `public/figure/carrel.html` is an isometric figure built by `figure/build.mjs`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Deploy
 
-## Learn More
+Each push to `main` publishes `ghcr.io/nycu-winlab/carrel.winlab.tw:sha-<commit>` and `:main`.
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+SITE_VERSION=sha-abc1234 SITE_BIND=10.10.10.117:3110 docker compose up -d
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The gateway sends the Carrel paths (`/mcp`, `/oauth/`, `/.well-known/`, `/healthz`, `/internal/`, `/apps/`) to Carrel and every other path to this image.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## For AI agents
 
-## Deploy on Vercel
+- **Summary:** static marketing and install page for Carrel.
+- **Type:** web
+- **Interfaces:** HTTP on port 8080 in the image.
+- **Install:** `bun install`
+- **Run:** `bun run dev`
+- **Verify:** `bun run tokens:check && bun run lint && bun run typecheck && bun run build`
+- **Config:** `NEXT_PUBLIC_BUILD_SHA`, `NEXT_PUBLIC_BUILD_TIME`, `NEXT_PUBLIC_BUILD_URL` at build time.
+- **Secrets:** none
+- **Limits:** the terminal is a drawing; it runs no commands.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## License
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT
