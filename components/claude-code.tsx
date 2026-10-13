@@ -1,13 +1,16 @@
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
-import { Line, T } from "@/components/terminal/terminal"
+import {
+  TerminalLine as Line,
+  TerminalText as T,
+} from "@/components/ui/terminal"
 
-// Claude Code's screen, piece by piece. Layout, glyphs, wording and colors
-// follow Claude Code 2.1.296 in a fresh config (no plugins, settings or
-// statusline of our own); what a demo changes is passed in as props.
-
-const MCP = "plugin:infrastructure:carrel"
+// Claude Code's screen, piece by piece, for demos and install guides. Layout,
+// glyphs, wording and colors follow Claude Code 2.1.296 in a fresh config
+// (no plugins, settings or statusline of our own); what a demo changes is
+// passed in as props. MCP servers are named the way Claude Code names them,
+// such as "plugin:infrastructure:carrel".
 
 // The welcome block: the logo, the version, the model and plan, the folder.
 // The logo is Claude Code's three rows of quadrant blocks, drawn as pixels so
@@ -27,12 +30,12 @@ function Welcome({
   cwd?: string
 }) {
   return (
-    <div className="t-gap3 t-blank-below flex items-center">
+    <div className="flex items-center gap-cells-2 pb-5">
       <svg
         aria-hidden
         viewBox="0 0 18 6"
         preserveAspectRatio="none"
-        className="t-logo shrink-0"
+        className="h-15 w-cells-9 shrink-0 fill-terminal-claude"
         shapeRendering="crispEdges"
       >
         <path d={LOGO} />
@@ -73,7 +76,7 @@ function Notice({
 // What the member typed, after they pressed Enter.
 function Prompt({ children }: { children: React.ReactNode }) {
   return (
-    <Line className="t-prompt-row">
+    <Line className="bg-terminal-prompt">
       <T tone="dim">❯ </T>
       <T tone="white">{children}</T>
     </Line>
@@ -83,21 +86,21 @@ function Prompt({ children }: { children: React.ReactNode }) {
 // The result of a slash command, hanging under it.
 function Output({ children }: { children: React.ReactNode }) {
   return (
-    <Line indent={2} className="t-blank-below">
+    <Line indent={2} className="pb-5">
       <T tone="dim">⎿ </T> {children}
     </Line>
   )
 }
 
-// A call to the Carrel MCP server: "Calling" while it runs, "Called" after.
-function McpCall({ done }: { done?: boolean }) {
+// A call to an MCP server: "Calling" while it runs, "Called" after.
+function McpCall({ server, done }: { server: string; done?: boolean }) {
   return done ? (
     <Line indent={2}>
-      <T tone="dim">Called {MCP} (ctrl+o to expand)</T>
+      <T tone="dim">Called {server} (ctrl+o to expand)</T>
     </Line>
   ) : (
     <Line>
-      <T tone="dim">⏺</T> Calling {MCP}… <T tone="dim">(ctrl+o to expand)</T>
+      <T tone="dim">⏺</T> Calling {server}… <T tone="dim">(ctrl+o to expand)</T>
     </Line>
   )
 }
@@ -105,13 +108,23 @@ function McpCall({ done }: { done?: boolean }) {
 // Claude's answer: a white dot, then the text; later lines hang under it.
 function Reply({ lines }: { lines: React.ReactNode[] }) {
   return (
-    <div className="t-blank-above">
-      {lines.map((line, index) => (
-        <Line key={index} indent={index === 0 ? 0 : 2}>
-          {index === 0 && <T tone="white">⏺ </T>}
-          {line}
-        </Line>
-      ))}
+    <div className="pt-5">
+      {lines.map((line, index) =>
+        index === 0 ? (
+          // The dot hangs in the first two cells, so a wrapped line lines
+          // up under the text, not under the dot.
+          <Line key={index} className="flex">
+            <T tone="white" className="w-cells-2 shrink-0">
+              ⏺
+            </T>
+            <T className="min-w-0">{line}</T>
+          </Line>
+        ) : (
+          <Line key={index} indent={2}>
+            {line}
+          </Line>
+        )
+      )}
     </div>
   )
 }
@@ -130,8 +143,8 @@ function Spinner({
 }) {
   const cut = Math.max(0, verb.length - 3)
   return (
-    <Line className="t-blank-above">
-      <T tone="accent">
+    <Line className="pt-5">
+      <T tone="claude">
         {glyph} {verb.slice(0, cut)}
       </T>
       <T tone="shimmer">{verb.slice(cut)}…</T>{" "}
@@ -153,7 +166,7 @@ function Done({
   time: string
 }) {
   return (
-    <Line className="t-blank-above">
+    <Line className="pt-5">
       <T tone="dim">
         ✻ {verb} for {seconds}s · done {time}
       </T>
@@ -173,14 +186,14 @@ function InputBox({
   busy?: boolean
 }) {
   return (
-    <div className="t-blank-above">
-      <div className="t-rule" />
+    <div className="pt-5">
+      <div className="border-t border-terminal-rule" />
       <Line>
         {"❯ "}
         {value ? (
           <>
             {value}
-            <span className="t-cursor"> </span>
+            <span className="bg-terminal-foreground text-terminal"> </span>
           </>
         ) : (
           <>
@@ -191,7 +204,7 @@ function InputBox({
           </>
         )}
       </Line>
-      <div className="t-rule" />
+      <div className="border-t border-terminal-rule" />
       <Line className="flex justify-between gap-4">
         <T tone="dim" className="truncate">
           {"  "}⏸ manual mode on ·{" "}
@@ -207,40 +220,43 @@ function InputBox({
 
 // The question Claude Code asks before it runs a tool in manual mode.
 function ToolUse({
+  server,
   tool,
   about,
   choice = 0,
 }: {
+  /** The MCP server, such as "plugin:infrastructure:carrel". */
+  server: string
   /** The tool's name as Claude Code shows it, such as "Machine Create". */
   tool: string
   about: string
   choice?: 0 | 1
 }) {
   return (
-    <div className="t-blank-above">
-      <div className="t-rule-select" />
+    <div className="pt-5">
+      <div className="border-t border-terminal-select" />
       <Line indent={1}>
         <T tone="select" bold>
           Tool use
         </T>
       </Line>
-      <Line indent={1} className="t-blank-above">
+      <Line indent={1} className="pt-5">
         <T bold>
-          {MCP} — {tool} Tool:
+          {server} — {tool} Tool:
         </T>
         <T tone="dim"> (MCP)</T>
       </Line>
-      <Line indent={1} className="t-blank-above">
+      <Line indent={1} className="pt-5">
         <T italic>
           About the{" "}
           <T bold>
-            {MCP} — {tool}
+            {server} — {tool}
           </T>{" "}
           Tool:
         </T>
       </Line>
       <Line indent={1}>
-        <span className="t-quote t-pad1 inline-block">
+        <span className="inline-block border-l border-terminal-dim indent-1">
           <T tone="dim" italic>
             {about}
           </T>
@@ -249,11 +265,11 @@ function ToolUse({
       <Line indent={1}>
         <T tone="dim">(ctrl+o to expand description)</T>
       </Line>
-      <Line indent={1} className="t-blank-above">
+      <Line indent={1} className="pt-5">
         Do you want to proceed?
       </Line>
       <Choices items={["Yes", "No"]} choice={choice} indent={1} />
-      <Line indent={1} className="t-blank-above">
+      <Line indent={1} className="pt-5">
         <T tone="dim">Esc to cancel · Tab to amend</T>
       </Line>
     </div>
@@ -293,9 +309,9 @@ function Choices({
 function Menu({ hint, children }: { hint: string; children: React.ReactNode }) {
   return (
     <div>
-      <div className="t-rule-select" />
+      <div className="border-t border-terminal-select" />
       {children}
-      <Line indent={2} className="t-blank-above">
+      <Line indent={2} className="pt-5">
         <T tone="dim" italic>
           {hint}
         </T>
@@ -315,7 +331,7 @@ const pluginTabs = [
 // The tab row of /plugins.
 function PluginTabs({ current }: { current: (typeof pluginTabs)[number] }) {
   return (
-    <Line indent={2} className="t-blank-below">
+    <Line indent={2} className="pb-5">
       <T tone="select" bold>
         Plugins
       </T>
@@ -350,7 +366,7 @@ function Marketplace({
   selected?: boolean
 }) {
   return (
-    <div className="t-blank-below">
+    <div className="pb-5">
       <Line indent={2}>
         {selected ? <T tone="select">❯ </T> : "  "}● <T bold>{name}</T>
       </Line>
@@ -374,7 +390,7 @@ function Field({
 }) {
   return (
     <Line indent={2} className="flex">
-      <T bold className="t-key shrink-0">
+      <T bold className="w-cells-18 shrink-0">
         {name}
       </T>
       <span>{children}</span>
