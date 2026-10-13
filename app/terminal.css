@@ -25,11 +25,22 @@
   line-height: var(--t-line);
 }
 
-.terminal .t-row { min-height: var(--t-line); }
-.terminal .t-blank-above { padding-top: var(--t-line); }
-.terminal .t-blank-below { padding-bottom: var(--t-line); }
+.terminal .t-row {
+  min-height: var(--t-line);
+}
+.terminal .t-blank-above {
+  padding-top: var(--t-line);
+}
+.terminal .t-blank-below {
+  padding-bottom: var(--t-line);
+}
 /* One East Asian character: two cells, glyph centered. */
-.terminal .t-wide { display: inline-block; width: 2ch; text-align: center; text-indent: 0; }
+.terminal .t-wide {
+  display: inline-block;
+  width: 2ch;
+  text-align: center;
+  text-indent: 0;
+}
 
 .terminal .t-accent {
   color: var(--t-accent);
