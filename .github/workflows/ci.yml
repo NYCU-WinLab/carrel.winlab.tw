@@ -1,0 +1,33 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bun run tokens:check
+      - run: bun run lint
+      - run: bun run typecheck
+      - run: bun run format:check
+      - run: bun run build
+
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Start the image with compose
+        run: docker compose up -d --build --wait
+      - name: Serve the page, the figure and a real 404
+        run: |
+          curl -sf localhost:8080/ | grep -q "Carrel"
+          curl -sf localhost:8080/ | grep -q "claudeai-nycu-winlab-marketplace"
+          curl -sf localhost:8080/figure/carrel.html | grep -q "iso-stage"
+          test "$(curl -s -o /dev/null -w '%{http_code}' localhost:8080/missing)" = 404
+          ! curl -sI localhost:8080/ | grep -qi "server: nginx/"

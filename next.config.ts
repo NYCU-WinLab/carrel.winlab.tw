@@ -1,10 +1,12 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from "next"
 
+// Static export: the site is plain files served by nginx. carrel.winlab.tw
+// sends every path Carrel itself does not serve (/mcp, /oauth, /.well-known,
+// /healthz, /internal, /apps) to this site.
 const nextConfig: NextConfig = {
-  /* config options here */
-  cacheComponents: true,
-  partialPrefetching: true,
+  output: "export",
   turbopack: {
+    root: __dirname,
     rules: {
       "*.css": {
         loaders: ["@tailwindcss/turbopack"],
@@ -12,6 +14,6 @@ const nextConfig: NextConfig = {
       },
     },
   },
-};
+}
 
-export default nextConfig;
+export default nextConfig
