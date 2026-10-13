@@ -48,10 +48,10 @@ function MarketplacesScreen() {
       <Prompt>/plugins</Prompt>
       <Menu hint="Enter to select · u to update · d to remove · Esc to go back">
         <PluginTabs current="Marketplaces" />
-        <Line indent={2} className="pb-6">
+        <Line indent={2} className="t-blank-below">
           <T bold>Manage marketplaces</T>
         </Line>
-        <Line indent={2} className="pb-6">
+        <Line indent={2} className="t-blank-below">
           {"  "}
           <T tone="select">+</T>{" "}
           <T tone="select" bold>
@@ -88,7 +88,7 @@ function PluginScreen() {
       <Prompt>/plugins</Prompt>
       <Menu hint="Enter to select · Esc to go back">
         <PluginTabs current="Marketplaces" />
-        <Line indent={2} className="pb-6">
+        <Line indent={2} className="t-blank-below">
           <T bold>Plugin Details</T>
         </Line>
         <Line indent={2}>
@@ -99,13 +99,13 @@ function PluginScreen() {
           carrel MCP server, plus B09 SSH ProxyJump access, connection
           troubleshooting, port forwarding and VPN guidance.
         </Line>
-        <Line indent={2} className="pb-6">
+        <Line indent={2} className="t-blank-below">
           <T tone="dim">By: NYCU WinLab</T>
         </Line>
         <Line indent={2}>
           <T bold>Will install:</T>
         </Line>
-        <Line indent={2} className="pb-6">
+        <Line indent={2} className="t-blank-below">
           <T tone="dim">· Components will be discovered at installation</T>
         </Line>
         <Choices
@@ -128,10 +128,10 @@ function McpScreen() {
     <Terminal title="~/demo — claude">
       <Welcome />
       <Notice hint="run /mcp">1 MCP server needs authentication</Notice>
-      <div className="pb-6" />
+      <div className="t-blank-below" />
       <Prompt>/mcp</Prompt>
       <Menu hint="↑/↓ to navigate · Enter to select · Esc to back">
-        <Line indent={2} className="pb-6">
+        <Line indent={2} className="t-blank-below">
           <T tone="select" bold>
             Plugin:infrastructure:carrel MCP Server
           </T>
@@ -148,7 +148,7 @@ function McpScreen() {
         <Field name="Config location:">
           <T tone="dim">Dynamically configured</T>
         </Field>
-        <div className="pb-6" />
+        <div className="t-blank-below" />
         <Choices items={["Authenticate", "Disable"]} choice={0} />
       </Menu>
     </Terminal>

@@ -27,7 +27,7 @@ function Welcome({
   cwd?: string
 }) {
   return (
-    <div className="t-gap3 flex items-center pb-6">
+    <div className="t-gap3 t-blank-below flex items-center">
       <svg
         aria-hidden
         viewBox="0 0 18 6"
@@ -83,7 +83,7 @@ function Prompt({ children }: { children: React.ReactNode }) {
 // The result of a slash command, hanging under it.
 function Output({ children }: { children: React.ReactNode }) {
   return (
-    <Line indent={2} className="pb-6">
+    <Line indent={2} className="t-blank-below">
       <T tone="dim">⎿ </T> {children}
     </Line>
   )
@@ -105,7 +105,7 @@ function McpCall({ done }: { done?: boolean }) {
 // Claude's answer: a white dot, then the text; later lines hang under it.
 function Reply({ lines }: { lines: React.ReactNode[] }) {
   return (
-    <div className="pt-6">
+    <div className="t-blank-above">
       {lines.map((line, index) => (
         <Line key={index} indent={index === 0 ? 0 : 2}>
           {index === 0 && <T tone="white">⏺ </T>}
@@ -130,7 +130,7 @@ function Spinner({
 }) {
   const cut = Math.max(0, verb.length - 3)
   return (
-    <Line className="pt-6">
+    <Line className="t-blank-above">
       <T tone="accent">
         {glyph} {verb.slice(0, cut)}
       </T>
@@ -153,7 +153,7 @@ function Done({
   time: string
 }) {
   return (
-    <Line className="pt-6">
+    <Line className="t-blank-above">
       <T tone="dim">
         ✻ {verb} for {seconds}s · done {time}
       </T>
@@ -173,7 +173,7 @@ function InputBox({
   busy?: boolean
 }) {
   return (
-    <div className="pt-6">
+    <div className="t-blank-above">
       <div className="t-rule" />
       <Line>
         {"❯ "}
@@ -217,20 +217,20 @@ function ToolUse({
   choice?: 0 | 1
 }) {
   return (
-    <div className="pt-6">
+    <div className="t-blank-above">
       <div className="t-rule-select" />
       <Line indent={1}>
         <T tone="select" bold>
           Tool use
         </T>
       </Line>
-      <Line indent={1} className="pt-6">
+      <Line indent={1} className="t-blank-above">
         <T bold>
           {MCP} — {tool} Tool:
         </T>
         <T tone="dim"> (MCP)</T>
       </Line>
-      <Line indent={1} className="pt-6">
+      <Line indent={1} className="t-blank-above">
         <T italic>
           About the{" "}
           <T bold>
@@ -249,11 +249,11 @@ function ToolUse({
       <Line indent={1}>
         <T tone="dim">(ctrl+o to expand description)</T>
       </Line>
-      <Line indent={1} className="pt-6">
+      <Line indent={1} className="t-blank-above">
         Do you want to proceed?
       </Line>
       <Choices items={["Yes", "No"]} choice={choice} indent={1} />
-      <Line indent={1} className="pt-6">
+      <Line indent={1} className="t-blank-above">
         <T tone="dim">Esc to cancel · Tab to amend</T>
       </Line>
     </div>
@@ -295,7 +295,7 @@ function Menu({ hint, children }: { hint: string; children: React.ReactNode }) {
     <div>
       <div className="t-rule-select" />
       {children}
-      <Line indent={2} className="pt-6">
+      <Line indent={2} className="t-blank-above">
         <T tone="dim" italic>
           {hint}
         </T>
@@ -315,7 +315,7 @@ const pluginTabs = [
 // The tab row of /plugins.
 function PluginTabs({ current }: { current: (typeof pluginTabs)[number] }) {
   return (
-    <Line indent={2} className="pb-6">
+    <Line indent={2} className="t-blank-below">
       <T tone="select" bold>
         Plugins
       </T>
@@ -350,7 +350,7 @@ function Marketplace({
   selected?: boolean
 }) {
   return (
-    <div className="pb-6">
+    <div className="t-blank-below">
       <Line indent={2}>
         {selected ? <T tone="select">❯ </T> : "  "}● <T bold>{name}</T>
       </Line>
