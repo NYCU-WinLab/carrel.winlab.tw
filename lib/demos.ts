@@ -43,7 +43,7 @@ const demos: Demo[] = [
   {
     id: "web",
     label: "開網頁",
-    prompt: "開一台機器跑我的網站，port 3000，給我一個網址",
+    prompt: "開一台機器跑我的網站，給我一個網址",
     tool: "Domain Add",
     about:
       "Publish HTTPS at <sub>.<tenant>.winlab.tw. DNS and TLS are automatic; the operation waits until routing is configured. Application responses require an external check.",
@@ -51,7 +51,7 @@ const demos: Demo[] = [
     seconds: 52,
     tokens: 731,
     reply: [
-      [{ text: "web 開好了，port 3000 已經發布成 HTTPS：" }],
+      [{ text: "web 開好了，網站已經發布成 HTTPS：" }],
       [],
       [{ text: "https://web.alice.winlab.tw", tone: "select" }],
       [],

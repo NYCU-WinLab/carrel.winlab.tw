@@ -8,6 +8,8 @@ import {
 
 import "./globals.css"
 import "./terminal.css"
+import "./figure.css"
+import "./status.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@/lib/utils"
 

@@ -85,6 +85,7 @@ for (const root of roots) {
     // of Claude Code and keeps its palette.
     if (path === join("app", "globals.css")) continue
     if (path === join("app", "terminal.css")) continue
+    if (path === join("app", "figure.css")) continue
     const lines = (await readFile(path, "utf8")).split("\n")
     const isComponent = componentRoots.some((root) => path.startsWith(root))
     const rules = isComponent ? patterns : [...patterns, ...pagePatterns]
