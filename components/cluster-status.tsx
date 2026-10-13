@@ -25,13 +25,17 @@ type Status = {
     disk_gib: Pair
   }
   allocated: { vcpu: Allocation; memory_gib: Allocation; disk_gib: Allocation }
-  tenants: {
-    name: string
-    machines: number
-    vcpu: number
-    memory_gib: number
-    disk_gib: number
-  }[]
+  /** Members whose username is already public through a published domain. */
+  tenants: Share[]
+  /** Everyone else, summed without names. */
+  others: Omit<Share, "name"> & { tenants: number }
+}
+type Share = {
+  name: string
+  machines: number
+  vcpu: number
+  memory_gib: number
+  disk_gib: number
 }
 
 const POLL_MS = 30_000
@@ -102,7 +106,7 @@ function ClusterStatus() {
     )
   }
 
-  const { node, allocated, tenants } = status
+  const { node, allocated, tenants, others } = status
   const time = new Date(status.checked_at).toLocaleTimeString("zh-TW", {
     hour: "2-digit",
     minute: "2-digit",
@@ -178,6 +182,25 @@ function ClusterStatus() {
               </TableCell>
             </TableRow>
           ))}
+          {others.tenants > 0 && (
+            <TableRow>
+              <TableCell className="text-muted-foreground">
+                其他 {others.tenants} 人
+              </TableCell>
+              <TableCell className="text-right tabular-nums">
+                {others.machines}
+              </TableCell>
+              <TableCell className="text-right tabular-nums">
+                {others.vcpu}
+              </TableCell>
+              <TableCell className="text-right tabular-nums">
+                {gib(others.memory_gib)}
+              </TableCell>
+              <TableCell className="text-right tabular-nums">
+                {gib(others.disk_gib)}
+              </TableCell>
+            </TableRow>
+          )}
         </TableBody>
       </Table>
       <p className="text-muted-foreground">更新於 {time}</p>
