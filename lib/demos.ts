@@ -11,8 +11,6 @@ type Demo = {
   /** The tool as Claude Code names it in the permission question. */
   tool: string
   about: string
-  /** Spinner and finish words, the way Claude Code pairs them. */
-  verb: [string, string]
   seconds: number
   tokens: number
   reply: Run[][]
@@ -26,7 +24,6 @@ const demos: Demo[] = [
     tool: "Machine Create",
     about:
       "Create one VM/CT directly when the user asks for a machine. Defaults: Debian 13 minimal VM, 1 vCPU, 1 GiB RAM, 10 GiB disk, 1 GiB swap. Supply an SSH public key inline…",
-    verb: ["Creating", "Baked"],
     seconds: 34,
     tokens: 486,
     reply: [
@@ -47,7 +44,6 @@ const demos: Demo[] = [
     tool: "Domain Add",
     about:
       "Publish HTTPS at <sub>.<tenant>.winlab.tw. DNS and TLS are automatic; the operation waits until routing is configured. Application responses require an external check.",
-    verb: ["Cooking", "Cooked"],
     seconds: 52,
     tokens: 731,
     reply: [
@@ -69,7 +65,6 @@ const demos: Demo[] = [
     tool: "Deployment Apply",
     about:
       "Create a group of machines, connections and publications in one call when authorized. Use deployment_plan only when a preview is wanted, then apply the same specification…",
-    verb: ["Brewing", "Brewed"],
     seconds: 47,
     tokens: 902,
     reply: [
@@ -90,7 +85,6 @@ const demos: Demo[] = [
     tool: "Snapshot Create",
     about:
       "Create a disk snapshot. Reserves its worst-case size in the separate snapshot_gb quota, not disk_gb. Actual retained blocks are reported separately when available.",
-    verb: ["Churning", "Churned"],
     seconds: 9,
     tokens: 214,
     reply: [
@@ -113,7 +107,6 @@ const demos: Demo[] = [
     tool: "Machine Power",
     about:
       "Control an existing machine by name in one call; no preliminary lookup or preview is required. start starts or resumes; shutdown gracefully turns off; stop force-powers off…",
-    verb: ["Crunching", "Crunched"],
     seconds: 6,
     tokens: 168,
     reply: [

@@ -15,6 +15,7 @@ import {
   Spinner,
   ToolUse,
   Welcome,
+  spinnerVerb,
 } from "@/components/claude-code"
 
 const MCP = "plugin:infrastructure:carrel"
@@ -48,7 +49,17 @@ function runs(line: Run[]) {
   ))
 }
 
-function Turn({ demo, step, t }: { demo: Demo; step: Step; t: number }) {
+function Turn({
+  demo,
+  verb,
+  step,
+  t,
+}: {
+  demo: Demo
+  verb: string
+  step: Step
+  t: number
+}) {
   const at = order.indexOf(step)
   const typed =
     step === "type" ? demo.prompt.slice(0, Math.floor(t / TYPE_MS)) : ""
@@ -70,11 +81,24 @@ function Turn({ demo, step, t }: { demo: Demo; step: Step; t: number }) {
       {at >= 1 && <Prompt>{demo.prompt}</Prompt>}
       {at >= 2 && at !== 2 && <McpCall server={MCP} done={at >= 4} />}
       {at >= 4 && <Reply lines={demo.reply.slice(0, shown).map(runs)} />}
-      {(at === 1 || at === 3) && (
-        <Spinner verb={demo.verb[0]} seconds={seconds} tokens={tokens} />
+      {at === 1 && (
+        <Spinner
+          verb={verb}
+          seconds={seconds}
+          tokens={tokens}
+          thinking={seconds}
+        />
+      )}
+      {at === 3 && (
+        <Spinner
+          verb={verb}
+          mode="tool-use"
+          seconds={seconds}
+          tokens={tokens}
+        />
       )}
       {at === 5 && (
-        <Done verb={demo.verb[1]} seconds={demo.seconds} time="10:18 PM" />
+        <Done seed={demo.id} seconds={demo.seconds} time="10:18 PM" />
       )}
       {at === 2 ? (
         <ToolUse server={MCP} tool={demo.tool} about={demo.about} />
@@ -94,6 +118,8 @@ function CarrelDemo() {
   const [step, setStep] = React.useState<Step>("type")
   const [t, setT] = React.useState(0)
   const [still, setStill] = React.useState(false)
+  // Claude Code picks a new verb for each turn.
+  const [verb, setVerb] = React.useState("Thinking")
   const root = React.useRef<HTMLDivElement>(null)
   const demo = demos[index]
 
@@ -125,6 +151,7 @@ function CarrelDemo() {
           const next = order.indexOf(local.step) + 1
           if (next < order.length) {
             local = { ...local, step: order[next], t: 0 }
+            if (local.step === "think") setVerb(spinnerVerb())
           } else {
             // Another demo, never the same one twice in a row.
             const pick =
@@ -173,7 +200,12 @@ function CarrelDemo() {
       <Terminal title="~/demo — claude" className="h-144 sm:h-160">
         <Welcome />
         <Screen>
-          <Turn demo={demo} step={still ? "rest" : step} t={still ? 0 : t} />
+          <Turn
+            demo={demo}
+            verb={verb}
+            step={still ? "rest" : step}
+            t={still ? 0 : t}
+          />
         </Screen>
       </Terminal>
     </div>

@@ -1,3 +1,5 @@
+"use client"
+
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
@@ -134,53 +136,361 @@ function Reply({ lines }: { lines: React.ReactNode[] }) {
   )
 }
 
-// The working line while Claude thinks.
+// The verbs Claude Code 2.1.296 picks from, once per turn, for its working
+// line, and the past tenses of the line a finished turn leaves behind.
+const SPINNER_VERBS = [
+  "Accomplishing",
+  "Actioning",
+  "Actualizing",
+  "Architecting",
+  "Baking",
+  "Beaming",
+  "Beboppin'",
+  "Befuddling",
+  "Billowing",
+  "Blanching",
+  "Bloviating",
+  "Boogieing",
+  "Boondoggling",
+  "Booping",
+  "Bootstrapping",
+  "Brewing",
+  "Bunning",
+  "Burrowing",
+  "Calculating",
+  "Canoodling",
+  "Caramelizing",
+  "Cascading",
+  "Catapulting",
+  "Cerebrating",
+  "Channeling",
+  "Choreographing",
+  "Churning",
+  "Clauding",
+  "Coalescing",
+  "Cogitating",
+  "Combobulating",
+  "Composing",
+  "Computing",
+  "Concocting",
+  "Considering",
+  "Contemplating",
+  "Cooking",
+  "Crafting",
+  "Creating",
+  "Crunching",
+  "Crystallizing",
+  "Cultivating",
+  "Deciphering",
+  "Deliberating",
+  "Determining",
+  "Dilly-dallying",
+  "Discombobulating",
+  "Doing",
+  "Doodling",
+  "Drizzling",
+  "Ebbing",
+  "Effecting",
+  "Elucidating",
+  "Embellishing",
+  "Enchanting",
+  "Envisioning",
+  "Fermenting",
+  "Fiddle-faddling",
+  "Finagling",
+  "Flambéing",
+  "Flibbertigibbeting",
+  "Flowing",
+  "Flummoxing",
+  "Fluttering",
+  "Forging",
+  "Forming",
+  "Frolicking",
+  "Frosting",
+  "Gallivanting",
+  "Galloping",
+  "Garnishing",
+  "Generating",
+  "Gesticulating",
+  "Germinating",
+  "Gitifying",
+  "Grooving",
+  "Gusting",
+  "Harmonizing",
+  "Hashing",
+  "Hatching",
+  "Herding",
+  "Honking",
+  "Hullaballooing",
+  "Hyperspacing",
+  "Ideating",
+  "Imagining",
+  "Improvising",
+  "Incubating",
+  "Inferring",
+  "Infusing",
+  "Ionizing",
+  "Jitterbugging",
+  "Julienning",
+  "Kerfuffling",
+  "Kneading",
+  "Leavening",
+  "Levitating",
+  "Lollygagging",
+  "Manifesting",
+  "Marinating",
+  "Meandering",
+  "Metamorphosing",
+  "Misting",
+  "Moonwalking",
+  "Moseying",
+  "Mulling",
+  "Mustering",
+  "Musing",
+  "Nebulizing",
+  "Nesting",
+  "Newspapering",
+  "Noodling",
+  "Nucleating",
+  "Onioning",
+  "Orbiting",
+  "Orchestrating",
+  "Osmosing",
+  "Perambulating",
+  "Percolating",
+  "Perusing",
+  "Philosophizing",
+  "Photosynthesizing",
+  "Polishing",
+  "Pollinating",
+  "Pondering",
+  "Pontificating",
+  "Pouncing",
+  "Precipitating",
+  "Prestidigitating",
+  "Processing",
+  "Proofing",
+  "Propagating",
+  "Puttering",
+  "Puzzling",
+  "Quantumizing",
+  "Razzle-dazzling",
+  "Razzmatazzing",
+  "Recombobulating",
+  "Reticulating",
+  "Roosting",
+  "Ruminating",
+  "Sautéing",
+  "Scampering",
+  "Schlepping",
+  "Scurrying",
+  "Seasoning",
+  "Shenaniganing",
+  "Shimmying",
+  "Simmering",
+  "Skedaddling",
+  "Sketching",
+  "Slithering",
+  "Smooshing",
+  "Sock-hopping",
+  "Spelunking",
+  "Spinning",
+  "Sprouting",
+  "Stewing",
+  "Sublimating",
+  "Swirling",
+  "Swooping",
+  "Symbioting",
+  "Synthesizing",
+  "Tempering",
+  "Thinking",
+  "Thundering",
+  "Tinkering",
+  "Tomfoolering",
+  "Topsy-turvying",
+  "Transfiguring",
+  "Transmogrifying",
+  "Transmuting",
+  "Twisting",
+  "Undulating",
+  "Unfurling",
+  "Unraveling",
+  "Vibing",
+  "Waddling",
+  "Wandering",
+  "Warping",
+  "Whatchamacalliting",
+  "Whirlpooling",
+  "Whirring",
+  "Whisking",
+  "Wibbling",
+  "Working",
+  "Wrangling",
+  "Zesting",
+  "Zigzagging",
+]
+const DONE_VERBS = [
+  "Baked",
+  "Brewed",
+  "Churned",
+  "Cogitated",
+  "Cooked",
+  "Crunched",
+  "Sautéed",
+  "Worked",
+]
+
+/** A verb for a new turn's working line, the way Claude Code picks one. */
+function spinnerVerb() {
+  return SPINNER_VERBS[Math.floor(Math.random() * SPINNER_VERBS.length)]
+}
+
+/** The finished line's verb: Claude Code hashes the message id into the list,
+ * so the same turn always says the same word. */
+function doneVerb(seed: string) {
+  let hash = 0
+  for (const char of seed) hash = (hash * 31 + char.charCodeAt(0)) | 0
+  return DONE_VERBS[(hash >>> 0) % DONE_VERBS.length]
+}
+
+// A clock in milliseconds that ticks every `ms` while motion is allowed.
+function useTicks(ms: number) {
+  const [now, setNow] = React.useState(0)
+  React.useEffect(() => {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return
+    const start = performance.now()
+    const id = setInterval(() => setNow(performance.now() - start), ms)
+    return () => clearInterval(id)
+  }, [ms])
+  return now
+}
+
+const GLYPHS = ["·", "✢", "✳", "✶", "✻", "✽"]
+
+const compact = new Intl.NumberFormat("en-US", {
+  notation: "compact",
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1,
+})
+
+function tokenCount(tokens: number) {
+  return tokens < 1000 ? String(tokens) : compact.format(tokens).toLowerCase()
+}
+
+function duration(seconds: number) {
+  return seconds < 60
+    ? `${seconds}s`
+    : `${Math.floor(seconds / 60)}m ${seconds % 60}s`
+}
+
+function thinkingLabel(seconds: number) {
+  if (seconds < 10) return "thinking"
+  if (seconds < 20) return "still thinking"
+  if (seconds < 30) return "thinking more"
+  if (seconds < 45) return "thinking some more"
+  return "deep in thought"
+}
+
+// The working line while Claude works, as Claude Code 2.1.296 draws it:
+// the glyph eases through ·✢✳✶✻✽ and back every 2 seconds; a 3-cell
+// highlight sweeps right to left across the verb, one cell per 200ms
+// (left to right, every 50ms, while waiting for the first token); while a
+// tool runs the whole verb pulses instead. The parenthesis appears once
+// there are tokens, a thinking label, or more than 16 seconds.
 function Spinner({
-  glyph = "✽",
-  verb,
+  verb = "Thinking",
+  mode = "responding",
   seconds,
-  tokens,
+  tokens = 0,
+  thinking,
 }: {
-  glyph?: string
-  verb: string
+  /** One of Claude Code's verbs; pick a new one per turn with spinnerVerb(). */
+  verb?: string
+  mode?: "responding" | "requesting" | "tool-use"
   seconds: number
-  tokens: number
+  tokens?: number
+  /** Seconds spent thinking so far; omit when Claude is not thinking. */
+  thinking?: number
 }) {
-  const cut = Math.max(0, verb.length - 3)
+  const now = useTicks(mode === "requesting" ? 50 : 100)
+  const glyph =
+    GLYPHS[Math.round(((1 - Math.cos((2 * Math.PI * now) / 2000)) / 2) * 5)]
+  const text = Array.from(verb.endsWith("…") ? verb : `${verb}…`)
+  const width = text.length
+  const cycle = width + 20
+  const center =
+    now === 0 || mode === "tool-use"
+      ? -100
+      : mode === "requesting"
+        ? (Math.floor(now / 50) % cycle) - 10
+        : width + 10 - (Math.floor(now / 200) % cycle)
+  const lit = (index: number) => index >= center - 1 && index <= center + 1
+
+  const parts = [
+    ...(tokens > 0 || thinking !== undefined || seconds > 16
+      ? [duration(seconds)]
+      : []),
+    ...(tokens > 0
+      ? [`${mode === "requesting" ? "↑" : "↓"} ${tokenCount(tokens)} tokens`]
+      : []),
+  ]
+  const label = thinking !== undefined && (
+    <T className="animate-terminal-thinking">{thinkingLabel(thinking)}</T>
+  )
+
   return (
     <Line className="pt-5">
-      <T tone="claude">
-        {glyph} {verb.slice(0, cut)}
+      <T tone="claude" className="inline-block w-cells-2">
+        {glyph}
       </T>
-      <T tone="shimmer">{verb.slice(cut)}…</T>{" "}
-      <T tone="dim">
-        ({seconds}s · ↓ {tokens} tokens · <T tone="soft">thinking</T>)
-      </T>
+      {mode === "tool-use" ? (
+        <T className="animate-terminal-claude">{text.join("")}</T>
+      ) : (
+        text.map((char, index) => (
+          <T key={index} tone={lit(index) ? "shimmer" : "claude"}>
+            {char}
+          </T>
+        ))
+      )}
+      {"  "}
+      {parts.length > 0 ? (
+        <T tone="dim">
+          ({parts.join(" · ")}
+          {label && <> · {label}</>})
+        </T>
+      ) : (
+        label && <>({label})</>
+      )}
     </Line>
   )
 }
 
-// The line left behind when a turn ends.
+// The line left behind when a turn ends. Without `verb` it picks one of
+// Claude Code's past tenses from `seed`, so a turn keeps its word.
 function Done({
   verb,
+  seed = "",
   seconds,
   time,
 }: {
-  verb: string
+  verb?: string
+  seed?: string
   seconds: number
   time: string
 }) {
   return (
     <Line className="pt-5">
       <T tone="dim">
-        ✻ {verb} for {seconds}s · done {time}
+        <span className="inline-block w-cells-2">✻</span>
+        {verb ?? doneVerb(seed + time)} for {duration(seconds)} · done {time}
       </T>
     </Line>
   )
 }
 
 // The input box at the bottom, with its status line. `value` is what is
-// being typed; without it the box shows the placeholder suggestion.
+// being typed; without it the box shows the placeholder suggestion, or
+// nothing while Claude is busy.
 function InputBox({
   value,
   placeholder = 'Try "fix typecheck errors"',
@@ -200,7 +510,7 @@ function InputBox({
             {value}
             <span className="bg-terminal-foreground text-terminal"> </span>
           </>
-        ) : (
+        ) : busy ? null : (
           <>
             <T inverse>{placeholder.slice(0, 1)}</T>
             <T tone="dim" faint>
@@ -444,5 +754,7 @@ export {
   Screen,
   Spinner,
   ToolUse,
+  doneVerb,
+  spinnerVerb,
   Welcome,
 }
