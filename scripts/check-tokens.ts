@@ -63,10 +63,11 @@ const pagePatterns = [
     regex: /(?<![-\w])border(?:-[xy])?(?![-\w])/g,
   },
 ]
-// Registry components (components/ui, claude-code) may draw frames.
+// Registry components (components/ui, claude-code, consent) may draw frames.
 const componentRoots = [
   join("components", "ui"),
   join("components", "claude-code.tsx"),
+  join("components", "consent.tsx"),
 ]
 
 async function* files(dir: string): AsyncGenerator<string> {
@@ -81,11 +82,9 @@ async function* files(dir: string): AsyncGenerator<string> {
 let failed = false
 for (const root of roots) {
   for await (const path of files(root)) {
-    // globals.css defines the tokens themselves; terminal.css and figure.css
-    // are pictures (Carrel's consent page, the study room) with their own
-    // colors.
+    // globals.css defines the tokens themselves; figure.css is a picture
+    // (the study room) with its own colors.
     if (path === join("app", "globals.css")) continue
-    if (path === join("app", "terminal.css")) continue
     if (path === join("app", "figure.css")) continue
     const lines = (await readFile(path, "utf8")).split("\n")
     const isComponent = componentRoots.some((root) => path.startsWith(root))

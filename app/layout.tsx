@@ -7,7 +7,6 @@ import {
 } from "next/font/google"
 
 import "./globals.css"
-import "./terminal.css"
 import "./figure.css"
 import "./status.css"
 import { ThemeProvider } from "@/components/theme-provider"

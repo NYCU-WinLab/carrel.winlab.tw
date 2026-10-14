@@ -4,7 +4,8 @@ import { cn } from "@/lib/utils"
 
 // A terminal window: a title bar with three window buttons and a body of
 // monospace rows. It draws a picture of another program, so it keeps the
-// terminal-* palette (dark) in every site theme. Rows are 1.25rem, about
+// terminal-* palette (dark) in every site theme; only the outer edge is the
+// page's border, the same as browser's, so the two frames sit side by side. Rows are 1.25rem, about
 // 1.25 times the font, and East Asian characters take two cells, the way a
 // terminal lays them out.
 function Terminal({
@@ -19,7 +20,7 @@ function Terminal({
   return (
     <div
       className={cn(
-        "flex flex-col overflow-hidden rounded-menu border border-terminal-line bg-terminal font-mono text-body leading-5 text-terminal-foreground",
+        "flex flex-col overflow-hidden rounded-menu border border-border bg-terminal font-mono text-body leading-5 text-terminal-foreground",
         className
       )}
     >
