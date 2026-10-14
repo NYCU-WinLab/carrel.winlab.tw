@@ -521,10 +521,13 @@ function Done({
 // nothing while Claude is busy.
 function InputBox({
   value,
+  composing,
   placeholder = 'Try "fix typecheck errors"',
   busy,
 }: {
   value?: string
+  /** IME text being composed, such as zhuyin, underlined before the cursor. */
+  composing?: string
   placeholder?: string
   busy?: boolean
 }) {
@@ -533,9 +536,12 @@ function InputBox({
       <Rule />
       <Line>
         {"❯ "}
-        {value ? (
+        {value || composing ? (
           <>
             {value}
+            {composing && (
+              <span className="underline *:underline">{composing}</span>
+            )}
             <span className="bg-terminal-foreground text-terminal"> </span>
           </>
         ) : busy ? null : (
