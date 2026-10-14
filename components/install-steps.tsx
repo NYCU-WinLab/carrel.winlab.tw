@@ -10,14 +10,16 @@ import {
   Menu,
   Notice,
   Output,
+  PluginList,
   PluginTabs,
   Prompt,
   Screen,
+  SearchBox,
   Welcome,
 } from "@/components/claude-code"
 import { ConsentScreen } from "@/components/consent-screen"
 
-// The four install screens, as Claude Code draws them. Wording comes from
+// The five install screens, as Claude Code draws them. Wording comes from
 // Claude Code 2.1.296; the marketplace row is the one WinLab's claude.ai
 // organization syncs into every member's Claude Code.
 
@@ -83,13 +85,68 @@ function MarketplacesScreen() {
   )
 }
 
+// The WinLab marketplace's plugins as Discover lists them, sorted by name.
+// Carrel's MCP server ships inside infrastructure.
+const winlabPlugins = [
+  {
+    name: "academic",
+    description:
+      "WinLab thesis defense and graduation planning, publication venue shortlisting, lab presentations",
+    version: "v0002",
+  },
+  {
+    name: "bluefield",
+    description:
+      "WinLab BlueField-2 DOCA upgrade planning, scoped installation guidance and boot troubleshooting",
+    version: "v0001",
+  },
+  {
+    name: "infrastructure",
+    description:
+      "WinLab infrastructure: Carrel machines (VMs and CTs) through the carrel MCP server",
+    version: "v0002",
+  },
+  {
+    name: "life",
+    description:
+      "WinLab meeting meal coordination, restaurant order summaries and receipt checklists.",
+    version: "v0001",
+  },
+  {
+    name: "media",
+    description:
+      "WinLab Transcribe speech-to-text for YouTube videos and live streams",
+    version: "v0001",
+  },
+  {
+    name: "prplos",
+    description:
+      "prplOS / prplMesh development, AP operations, deployment and troubleshooting.",
+    version: "v0001",
+  },
+]
+
+function DiscoverScreen() {
+  return (
+    <Terminal title="~/demo — claude">
+      <Welcome />
+      <Prompt>/plugins</Prompt>
+      <Menu hint="Type to search · Enter to view · Esc to go back">
+        <PluginTabs current="Discover" />
+        <SearchBox />
+        <PluginList items={winlabPlugins} choice={2} shown={5} />
+      </Menu>
+    </Terminal>
+  )
+}
+
 function PluginScreen() {
   return (
     <Terminal title="~/demo — claude">
       <Welcome />
       <Prompt>/plugins</Prompt>
       <Menu hint="Enter to select · Esc to go back">
-        <PluginTabs current="Marketplaces" />
+        <PluginTabs current="Discover" />
         <Line indent={2} className="pb-5">
           <T bold>Plugin Details</T>
         </Line>
@@ -180,7 +237,8 @@ function InstallSteps() {
         title={
           <>
             在 Claude Code 輸入 <code className={code}>/plugins</code>，切到
-            Marketplaces
+            Marketplaces，確認有{" "}
+            <code className={code}>claudeai-nycu-winlab-marketplace</code>
           </>
         }
       >
@@ -188,17 +246,15 @@ function InstallSteps() {
       </Step>
       <Step
         n={2}
-        title={
-          <>
-            選 <code className={code}>claudeai-nycu-winlab-marketplace</code>
-            ，安裝 infrastructure
-          </>
-        }
+        title={<>切到 Discover，選 infrastructure（Carrel 在這個 plugin 裡）</>}
       >
+        <DiscoverScreen />
+      </Step>
+      <Step n={3} title="按 Enter，選 Install for you">
         <PluginScreen />
       </Step>
       <Step
-        n={3}
+        n={4}
         title={
           <>
             輸入 <code className={code}>/mcp</code>，選 carrel，按 Authenticate
@@ -207,7 +263,7 @@ function InstallSteps() {
       >
         <McpScreen />
       </Step>
-      <Step n={4} title="在瀏覽器用 WinLab 帳號登入，按允許">
+      <Step n={5} title="在瀏覽器用 WinLab 帳號登入，按允許">
         <ConsentScreen />
         <ConnectedScreen />
       </Step>
