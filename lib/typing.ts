@@ -5,13 +5,13 @@ const TONES = "ˊˇˋ˙"
 /**
  * The keystrokes of `text`, timed. `zhuyin` gives each Chinese character's
  * reading, such as { 開: "ㄎㄞ", 我: "ㄨㄛˇ" }; a character without one is
- * typed as a single key. 150ms a key is about 80 words a minute.
+ * typed as a single key. 100ms a key is about 120 words a minute.
  */
 export function typingSteps(
   text: string,
   {
     zhuyin = {},
-    msPerKey = 150,
+    msPerKey = 100,
     jitter = 0.3,
     seed = 1,
   }: {
