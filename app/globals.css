@@ -60,8 +60,8 @@
   --color-terminal-bar: #1a1a1a;
   --color-terminal-line: #262626;
   --color-terminal-foreground: #e4e4e4;
-  --color-terminal-claude: #d78787;
-  --color-terminal-shimmer: #ffaf87;
+  --color-terminal-claude: #d77757;
+  --color-terminal-shimmer: #eb9f7f;
   --color-terminal-dim: #949494;
   --color-terminal-rule: #808080;
   --color-terminal-soft: #a8a8a8;
@@ -86,6 +86,16 @@
   --color-color-terminal-line: var(--color-terminal-line);
   --color-color-terminal-bar: var(--color-terminal-bar);
   --color-color-terminal: var(--color-terminal);
+  @keyframes terminal-claude {
+    50% {
+      color: var(--color-terminal-shimmer);
+    }
+  }
+  @keyframes terminal-thinking {
+    50% {
+      color: #b9b9b9;
+    }
+  }
 }
 
 :root {
@@ -415,4 +425,20 @@
   background-image: linear-gradient(currentColor 0 0);
   background-size: 1px 100%;
   background-position: center;
+}
+
+@utility animate-terminal-claude {
+  color: var(--color-terminal-claude);
+  animation: terminal-claude 2s ease-in-out infinite;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+@utility animate-terminal-thinking {
+  color: #999999;
+  animation: terminal-thinking 2s ease-in-out infinite;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
 }
