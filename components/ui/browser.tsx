@@ -23,12 +23,12 @@ function Browser({
         className
       )}
     >
-      <div className="flex h-10 shrink-0 items-center gap-2 border-b border-border bg-muted px-4">
+      <div className="flex h-10 shrink-0 items-center gap-2 py-1.5 pr-1.5 pl-4">
         <span aria-hidden className="size-3 rounded-full bg-border" />
         <span aria-hidden className="size-3 rounded-full bg-border" />
         <span aria-hidden className="size-3 rounded-full bg-border" />
-        <span className="ml-4 min-w-0 flex-1 truncate rounded-control bg-background px-4 text-muted-foreground">
-          {url}
+        <span className="ml-4 flex h-full min-w-0 flex-1 items-center justify-center rounded-full bg-muted px-4 text-muted-foreground">
+          <span className="truncate">{url}</span>
         </span>
       </div>
       <div className="flex min-h-0 flex-1 flex-col">{children}</div>
