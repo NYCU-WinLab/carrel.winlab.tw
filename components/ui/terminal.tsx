@@ -128,11 +128,7 @@ function cells(node: React.ReactNode): React.ReactNode {
 }
 
 const tones = {
-  claude: "text-terminal-claude",
-  shimmer: "text-terminal-shimmer",
   dim: "text-terminal-dim",
-  rule: "text-terminal-rule",
-  soft: "text-terminal-soft",
   warn: "text-terminal-warn",
   select: "text-terminal-select",
   error: "text-terminal-error",

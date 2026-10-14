@@ -2,7 +2,11 @@
 // the Carrel tool Claude asks to run, and the answer. Tool descriptions are
 // the start of Carrel's real ones, cut where Claude Code cuts them.
 
-type Run = { text: string; tone?: "select" | "dim" | "success"; bold?: boolean }
+type Run = {
+  text: string
+  tone?: "permission" | "inactive" | "success"
+  bold?: boolean
+}
 
 type Demo = {
   id: string
@@ -34,7 +38,7 @@ const demos: Demo[] = [
       ],
       [{ text: "SSH 設定已寫進 ~/.ssh/config，直接連：" }],
       [],
-      [{ text: "ssh sandbox.alice", tone: "select" }],
+      [{ text: "ssh sandbox.alice", tone: "permission" }],
     ],
   },
   {
@@ -49,11 +53,11 @@ const demos: Demo[] = [
     reply: [
       [{ text: "web 開好了，網站已經發布成 HTTPS：" }],
       [],
-      [{ text: "https://web.alice.winlab.tw", tone: "select" }],
+      [{ text: "https://web.alice.winlab.tw", tone: "permission" }],
       [],
       [
         { text: "憑證和 DNS 都自動設好。程式部署上去後，用 " },
-        { text: "ssh web.alice", tone: "select" },
+        { text: "ssh web.alice", tone: "permission" },
         { text: " 進去啟動。" },
       ],
     ],
@@ -75,7 +79,7 @@ const demos: Demo[] = [
       ],
       [{ text: "Postgres 在開機時裝好並啟動，健康檢查通過。" }],
       [],
-      [{ text: "ssh db.alice", tone: "select" }],
+      [{ text: "ssh db.alice", tone: "permission" }],
     ],
   },
   {
@@ -90,7 +94,7 @@ const demos: Demo[] = [
     reply: [
       [
         { text: "快照 " },
-        { text: "before-upgrade", tone: "select" },
+        { text: "before-upgrade", tone: "permission" },
         { text: " 存好了。" },
       ],
       [

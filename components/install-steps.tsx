@@ -1,11 +1,8 @@
 import * as React from "react"
 
+import { TerminalLine as Line, Terminal } from "@/components/ui/terminal"
 import {
-  TerminalLine as Line,
-  TerminalText as T,
-  Terminal,
-} from "@/components/ui/terminal"
-import {
+  ClaudeText as T,
   Choices,
   Field,
   InputBox,
@@ -58,8 +55,8 @@ function MarketplacesScreen() {
         </Line>
         <Line indent={2} className="pb-5">
           {"  "}
-          <T tone="select">+</T>{" "}
-          <T tone="select" bold>
+          <T tone="permission">+</T>{" "}
+          <T tone="permission" bold>
             Add Marketplace
           </T>
         </Line>
@@ -105,13 +102,13 @@ function PluginScreen() {
           troubleshooting, port forwarding and VPN guidance.
         </Line>
         <Line indent={2} className="pb-5">
-          <T tone="dim">By: NYCU WinLab</T>
+          <T tone="inactive">By: NYCU WinLab</T>
         </Line>
         <Line indent={2}>
           <T bold>Will install:</T>
         </Line>
         <Line indent={2} className="pb-5">
-          <T tone="dim">· Components will be discovered at installation</T>
+          <T tone="inactive">· Components will be discovered at installation</T>
         </Line>
         <Choices
           numbered={false}
@@ -137,21 +134,21 @@ function McpScreen() {
       <Prompt>/mcp</Prompt>
       <Menu hint="↑/↓ to navigate · Enter to select · Esc to back">
         <Line indent={2} className="pb-5">
-          <T tone="select" bold>
+          <T tone="permission" bold>
             Plugin:infrastructure:carrel MCP Server
           </T>
         </Line>
         <Field name="Status:">
-          <T tone="warn">⚠ </T>needs authentication
+          <T tone="warning">⚠ </T>needs authentication
         </Field>
         <Field name="Auth:">
           <T tone="error">✘ </T>not authenticated
         </Field>
         <Field name="URL:">
-          <T tone="dim">https://carrel.winlab.tw</T>
+          <T tone="inactive">https://carrel.winlab.tw</T>
         </Field>
         <Field name="Config location:">
-          <T tone="dim">Dynamically configured</T>
+          <T tone="inactive">Dynamically configured</T>
         </Field>
         <div className="pb-5" />
         <Choices items={["Authenticate", "Disable"]} choice={0} />
