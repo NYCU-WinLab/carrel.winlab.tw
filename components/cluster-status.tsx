@@ -11,9 +11,11 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-// Live use of the Carrel cluster from Carrel's public GET /status: how busy
-// the node is, how much Carrel machines have taken of what it admits, and
-// each member's share. Polls every 30 seconds while the page is visible.
+// Live use of the Carrel cluster from Carrel's public GET /status: for CPU,
+// memory and disk, one ring whose full circle is what Carrel may hand out,
+// with what it has handed out and what is in use on it; then the default
+// budget and each member's share. Polls every 30 seconds while the page is
+// visible.
 
 type Pair = { total: number; used: number }
 type Allocation = { committed: number; limit: number }
@@ -29,7 +31,11 @@ type Status = {
   tenants: Share[]
   /** Everyone else, summed without names. */
   others: Omit<Share, "name"> & { tenants: number }
+  /** The default budget of a member, and the one each project group gets on
+   * top. Older Carrel versions leave it out. */
+  quota?: { member: Budget; project: Budget }
 }
+type Budget = Omit<Share, "name">
 type Share = {
   name: string
   machines: number
@@ -41,30 +47,77 @@ type Share = {
 const POLL_MS = 30_000
 const gib = (n: number) => `${Math.round(n)} GiB`
 
-function Meter({
+// One resource as a ring: the full circle is Carrel's limit, the primary arc
+// what is allocated, the gray arc what is in use. The shorter arc is drawn
+// on top so both stay visible.
+function Ring({
   label,
-  value,
-  max,
-  text,
+  limit,
+  allocated,
+  used,
+  allocatedText,
+  usedText,
 }: {
   label: string
-  value: number
-  max: number
-  text: string
+  limit: number
+  allocated: number
+  used: number
+  allocatedText: string
+  usedText: string
 }) {
+  const share = (n: number) => Math.min(100, Math.max(0, (n / limit) * 100))
+  const arcs = [
+    { value: share(allocated), className: "stroke-primary" },
+    { value: share(used), className: "stroke-muted-foreground" },
+  ].sort((a, b) => b.value - a.value)
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex justify-between gap-4">
-        <span>{label}</span>
-        <span className="text-muted-foreground tabular-nums">{text}</span>
+    <div className="flex items-center gap-6 sm:flex-col sm:gap-4">
+      <div className="relative size-24 shrink-0 sm:size-36">
+        <svg viewBox="0 0 120 120" className="size-full -rotate-90" aria-hidden>
+          <circle
+            cx="60"
+            cy="60"
+            r="52"
+            fill="none"
+            strokeWidth="10"
+            className="stroke-muted"
+          />
+          {arcs.map((arc) =>
+            arc.value > 0 ? (
+              <circle
+                key={arc.className}
+                cx="60"
+                cy="60"
+                r="52"
+                fill="none"
+                strokeWidth="10"
+                strokeLinecap="round"
+                pathLength={100}
+                strokeDasharray={`${arc.value} 100`}
+                className={arc.className}
+              />
+            ) : null
+          )}
+        </svg>
+        <span className="absolute inset-0 flex items-center justify-center font-semibold tabular-nums">
+          {Math.round(share(allocated))}%
+        </span>
       </div>
-      <progress
-        className="status-meter"
-        value={Math.min(value, max)}
-        max={max}
-        aria-label={label}
-      />
+      <div className="flex flex-col gap-1 sm:items-center sm:text-center">
+        <span className="font-semibold">{label}</span>
+        <span className="tabular-nums">{allocatedText}</span>
+        <span className="text-muted-foreground tabular-nums">{usedText}</span>
+      </div>
     </div>
+  )
+}
+
+function Swatch({ className, label }: { className: string; label: string }) {
+  return (
+    <span className="flex items-center gap-2">
+      <span aria-hidden className={`size-2 rounded-full ${className}`} />
+      {label}
+    </span>
   )
 }
 
@@ -106,53 +159,87 @@ function ClusterStatus() {
     )
   }
 
-  const { node, allocated, tenants, others } = status
+  const { node, allocated, tenants, others, quota } = status
   const time = new Date(status.checked_at).toLocaleTimeString("zh-TW", {
     hour: "2-digit",
     minute: "2-digit",
     hour12: false,
   })
+  const threads = node.cpu.logical_cpus
 
   return (
     <div className="flex flex-col gap-12">
-      <div className="grid gap-6 sm:grid-cols-3">
-        <Meter
-          label="CPU"
-          value={node.cpu.utilization}
-          max={1}
-          text={`${Math.round(node.cpu.utilization * 100)}%，${node.cpu.logical_cpus} 執行緒`}
-        />
-        <Meter
-          label="記憶體"
-          value={node.memory_gib.used}
-          max={node.memory_gib.total}
-          text={`${gib(node.memory_gib.used)} / ${gib(node.memory_gib.total)}`}
-        />
-        <Meter
-          label="硬碟"
-          value={node.disk_gib.used}
-          max={node.disk_gib.total}
-          text={`${gib(node.disk_gib.used)} / ${gib(node.disk_gib.total)}`}
-        />
-        <Meter
-          label="已分配 vCPU"
-          value={allocated.vcpu.committed}
-          max={allocated.vcpu.limit}
-          text={`${allocated.vcpu.committed} / ${allocated.vcpu.limit}`}
-        />
-        <Meter
-          label="已分配記憶體"
-          value={allocated.memory_gib.committed}
-          max={allocated.memory_gib.limit}
-          text={`${gib(allocated.memory_gib.committed)} / ${gib(allocated.memory_gib.limit)}`}
-        />
-        <Meter
-          label="已分配硬碟"
-          value={allocated.disk_gib.committed}
-          max={allocated.disk_gib.limit}
-          text={`${gib(allocated.disk_gib.committed)} / ${gib(allocated.disk_gib.limit)}`}
-        />
+      <div className="flex flex-col gap-6">
+        <div className="grid gap-6 sm:grid-cols-3 sm:gap-12">
+          <Ring
+            label="CPU"
+            limit={allocated.vcpu.limit}
+            allocated={allocated.vcpu.committed}
+            used={node.cpu.utilization * threads}
+            allocatedText={`已分配 ${allocated.vcpu.committed} / ${allocated.vcpu.limit} vCPU`}
+            usedText={`使用中 ${Math.round(node.cpu.utilization * 100)}%，${threads} 執行緒`}
+          />
+          <Ring
+            label="記憶體"
+            limit={allocated.memory_gib.limit}
+            allocated={allocated.memory_gib.committed}
+            used={node.memory_gib.used}
+            allocatedText={`已分配 ${gib(allocated.memory_gib.committed)} / ${gib(allocated.memory_gib.limit)}`}
+            usedText={`使用中 ${gib(node.memory_gib.used)} / ${gib(node.memory_gib.total)}`}
+          />
+          <Ring
+            label="硬碟"
+            limit={allocated.disk_gib.limit}
+            allocated={allocated.disk_gib.committed}
+            used={node.disk_gib.used}
+            allocatedText={`已分配 ${gib(allocated.disk_gib.committed)} / ${gib(allocated.disk_gib.limit)}`}
+            usedText={`使用中 ${gib(node.disk_gib.used)} / ${gib(node.disk_gib.total)}`}
+          />
+        </div>
+        <div className="flex flex-wrap gap-6 text-muted-foreground sm:justify-center">
+          <Swatch className="bg-primary" label="已分配" />
+          <Swatch className="bg-muted-foreground" label="使用中" />
+          <Swatch className="bg-muted" label="可分配上限" />
+        </div>
       </div>
+
+      {quota && (
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>預算</TableHead>
+              <TableHead className="text-right">機器</TableHead>
+              <TableHead className="text-right">vCPU</TableHead>
+              <TableHead className="text-right">記憶體</TableHead>
+              <TableHead className="text-right">硬碟</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {(
+              [
+                ["每人", quota.member],
+                ["計畫群組，另計", quota.project],
+              ] as const
+            ).map(([name, b]) => (
+              <TableRow key={name}>
+                <TableCell>{name}</TableCell>
+                <TableCell className="text-right tabular-nums">
+                  {b.machines}
+                </TableCell>
+                <TableCell className="text-right tabular-nums">
+                  {b.vcpu}
+                </TableCell>
+                <TableCell className="text-right tabular-nums">
+                  {gib(b.memory_gib)}
+                </TableCell>
+                <TableCell className="text-right tabular-nums">
+                  {gib(b.disk_gib)}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
 
       <Table>
         <TableHeader>
