@@ -398,7 +398,7 @@
   }
 }
 
-@utility indent-* {
+@utility pl-cells-* {
   padding-inline-start: calc(--value(integer) * 1ch);
 }
 

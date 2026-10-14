@@ -14,7 +14,6 @@ import {
   PluginTabs,
   Prompt,
   Screen,
-  SearchBox,
   Welcome,
 } from "@/components/claude-code"
 import { ConsentScreen } from "@/components/consent-screen"
@@ -133,7 +132,6 @@ function DiscoverScreen() {
       <Prompt>/plugins</Prompt>
       <Menu hint="Type to search · Enter to view · Esc to go back">
         <PluginTabs current="Discover" />
-        <SearchBox />
         <PluginList items={winlabPlugins} choice={2} shown={5} />
       </Menu>
     </Terminal>

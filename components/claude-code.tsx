@@ -732,30 +732,52 @@ function Marketplace({
   )
 }
 
-// A search field in a menu, such as the one above /plugins > Discover: a
-// round box drawn with box characters, as wide as the screen.
+// How many monospace cells fit across `ref`: a terminal box is drawn to the
+// window's width, one character per cell. The probe holds 10 cells.
+function useColumns(ref: React.RefObject<HTMLDivElement | null>) {
+  const [columns, setColumns] = React.useState(0)
+  React.useEffect(() => {
+    const row = ref.current
+    const probe = row?.querySelector("[data-probe]")
+    if (!row || !probe) return
+    const measure = () =>
+      setColumns(
+        Math.floor(row.clientWidth / (probe.getBoundingClientRect().width / 10))
+      )
+    // The observer reports the first size as soon as it starts; the web font
+    // can arrive later and change the cell width.
+    const observer = new ResizeObserver(measure)
+    observer.observe(row)
+    document.fonts.ready.then(measure)
+    return () => observer.disconnect()
+  }, [ref])
+  return columns
+}
+
+// A search field in a menu, such as the one in /plugins > Discover: a round
+// box as wide as the screen. Each row is one string, the way the terminal
+// prints it, so the box copies whole.
 function SearchBox({ placeholder = "Search…" }: { placeholder?: string }) {
-  const edge = (left: string, right: string) => (
-    <Line indent={2} className="flex whitespace-nowrap">
-      <T tone="inactive">{left}</T>
-      <T tone="inactive" className="min-w-0 flex-1 overflow-hidden">
-        {"─".repeat(240)}
-      </T>
-      <T tone="inactive">{right}</T>
-    </Line>
-  )
+  const row = React.useRef<HTMLDivElement>(null)
+  const columns = useColumns(row)
+  const inner = Math.max(0, columns - 2)
+  const text = ` ⌕ ${placeholder}`.slice(0, inner).padEnd(inner)
   return (
-    <div className="pb-5">
-      {edge("╭", "╮")}
-      <Line indent={2} className="flex">
-        <T tone="inactive">│</T>
-        <T tone="inactive" className="min-w-0 flex-1">
-          {" ⌕ "}
-          {placeholder}
-        </T>
-        <T tone="inactive">│</T>
-      </Line>
-      {edge("╰", "╯")}
+    <div className="pl-cells-2 pb-5">
+      <div ref={row} className="relative">
+        <span data-probe aria-hidden className="invisible absolute">
+          0000000000
+        </span>
+        <Line>
+          <T tone="inactive">{columns > 1 && `╭${"─".repeat(inner)}╮`}</T>
+        </Line>
+        <Line>
+          <T tone="inactive">{columns > 1 && `│${text}│`}</T>
+        </Line>
+        <Line>
+          <T tone="inactive">{columns > 1 && `╰${"─".repeat(inner)}╯`}</T>
+        </Line>
+      </div>
     </div>
   )
 }
@@ -773,9 +795,9 @@ function cut(text: string, width: number) {
   return text.length > width ? `${text.slice(0, width - 1)}…` : text
 }
 
-// The plugin list of /plugins > Discover: a count, then one row per plugin
-// with its description cut to `width` cells and its version. `shown` rows
-// are drawn; the rest sit under "more below".
+// The plugin list of /plugins > Discover: a count, the search box, then one
+// row per plugin with its description cut to `width` cells and its version.
+// `shown` rows are drawn; the rest sit under "more below".
 function PluginList({
   items,
   choice,
@@ -789,12 +811,13 @@ function PluginList({
 }) {
   return (
     <>
-      <Line indent={2} className="pb-5">
+      <Line indent={2}>
         <T bold>Install Plugins</T>{" "}
         <T tone="inactive">
           ({choice + 1}/{items.length})
         </T>
       </Line>
+      <SearchBox />
       {items.slice(0, shown).map((item, index) => {
         const on = index === choice
         return (

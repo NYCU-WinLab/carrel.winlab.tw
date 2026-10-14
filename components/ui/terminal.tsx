@@ -195,12 +195,12 @@ function TerminalLine({
 }) {
   const pad = [
     "",
-    "indent-1",
-    "indent-2",
-    "indent-3",
-    "indent-4",
-    "indent-5",
-    "indent-6",
+    "pl-cells-1",
+    "pl-cells-2",
+    "pl-cells-3",
+    "pl-cells-4",
+    "pl-cells-5",
+    "pl-cells-6",
   ]
   return (
     <div
