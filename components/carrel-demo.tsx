@@ -2,7 +2,8 @@
 
 import * as React from "react"
 
-import { demos, type Demo, type Run } from "@/lib/demos"
+import { demos, zhuyin, type Demo, type Run } from "@/lib/demos"
+import { typedAt, typingDuration, typingSteps } from "@/lib/typing"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Terminal } from "@/components/ui/terminal"
 import {
@@ -32,12 +33,15 @@ const timing: Record<Step, number> = {
   answer: 0, // set from the reply length
   rest: 5200,
 }
-const TYPE_MS = 70
+// Each prompt typed with a Zhuyin IME at a steady pace, worked out once.
+const typing = demos.map((demo, index) =>
+  typingSteps(demo.prompt, { zhuyin, seed: index + 1 })
+)
 const LINE_MS = 260
 const order: Step[] = ["type", "think", "ask", "call", "answer", "rest"]
 
 function lengthOf(step: Step, demo: Demo) {
-  if (step === "type") return demo.prompt.length * TYPE_MS + 500
+  if (step === "type") return typingDuration(typing[demos.indexOf(demo)]) + 500
   if (step === "answer") return demo.reply.length * LINE_MS + 300
   return timing[step]
 }
@@ -63,7 +67,9 @@ function Turn({
 }) {
   const at = order.indexOf(step)
   const typed =
-    step === "type" ? demo.prompt.slice(0, Math.floor(t / TYPE_MS)) : ""
+    step === "type"
+      ? typedAt(typing[demos.indexOf(demo)], t)
+      : { text: "", composing: "" }
   // The spinner's clock runs to the demo's real duration over the turn.
   const working: Step[] = ["think", "ask", "call"]
   const total = working.reduce((sum, s) => sum + lengthOf(s, demo), 0)
@@ -105,7 +111,8 @@ function Turn({
         <ToolUse server={MCP} tool={demo.tool} about={demo.about} />
       ) : (
         <InputBox
-          value={typed || undefined}
+          value={typed.text || undefined}
+          composing={typed.composing || undefined}
           busy={at >= 1 && at <= 4}
           placeholder={at === 5 ? 'Try "fix typecheck errors"' : undefined}
         />
