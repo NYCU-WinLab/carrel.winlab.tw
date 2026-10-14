@@ -138,12 +138,24 @@ function CarrelFigure() {
     }))
     let idx = -1,
       phase: "rest" | "ask" | "act" | "reply" = "rest",
-      t = 0
+      since = performance.now()
     let touring = !still,
       frame = 0,
       last = 0,
       visible = false
     let idle: ReturnType<typeof setTimeout> | undefined
+    let wake: ReturnType<typeof setTimeout> | undefined
+    // The last value written to each attribute, so a frame writes only what
+    // changed: every write makes the browser repaint the whole drawing.
+    const written = new Map<Element, Record<string, string>>()
+    const write = (el: Element, name: string, value: string) => {
+      const seen = written.get(el) ?? {}
+      if (seen[name] === value) return
+      seen[name] = value
+      written.set(el, seen)
+      if (name === "transform") el.setAttribute(name, value)
+      else (el as SVGElement).style.setProperty(name, value)
+    }
 
     const say = () => {
       setUsed(seats.filter((s) => s.key).length)
@@ -160,7 +172,7 @@ function CarrelFigure() {
     const begin = (i: number) => {
       idx = i
       phase = "ask"
-      t = 0
+      since = performance.now()
       say()
     }
     const advance = () => {
@@ -168,12 +180,12 @@ function CarrelFigure() {
       if (phase === "ask") {
         STORY[idx].act(seats)
         phase = "act"
-        t = 0
+        since = performance.now()
         return
       }
       if (phase === "act") {
         phase = "reply"
-        t = 0
+        since = performance.now()
         say()
         return
       }
@@ -187,7 +199,7 @@ function CarrelFigure() {
           s.card = false
         })
         phase = "rest"
-        t = 0
+        since = performance.now()
         say()
         return
       }
@@ -195,20 +207,22 @@ function CarrelFigure() {
     }
     const draw = () => {
       seats.forEach((s, i) => {
-        keys[i].style.display = s.key ? "" : "none"
-        glows[i].style.opacity = String(0.55 * s.light)
-        bulbs[i].style.opacity = String(0.18 + 0.82 * s.light)
-        signs[i].style.display = s.sign > 0.01 ? "" : "none"
-        signs[i].setAttribute(
+        write(keys[i], "display", s.key ? "" : "none")
+        write(glows[i], "opacity", (0.55 * s.light).toFixed(2))
+        write(bulbs[i], "opacity", (0.18 + 0.82 * s.light).toFixed(2))
+        write(signs[i], "display", s.sign > 0.01 ? "" : "none")
+        write(
+          signs[i],
           "transform",
           translateAlong(P, [0, 0, figure.SIGN_Z - 8 * (1 - s.sign)])
         )
-        signs[i].style.opacity = String(s.sign)
-        drawers[i].setAttribute(
+        write(signs[i], "opacity", s.sign.toFixed(2))
+        write(
+          drawers[i],
           "transform",
           translateAlong(P, [0, figure.DRAWER_OUT * s.drawer, 0])
         )
-        cards[i].style.display = s.card && s.drawer > 0.05 ? "" : "none"
+        write(cards[i], "display", s.card && s.drawer > 0.05 ? "" : "none")
       })
     }
     const settle = () =>
@@ -217,30 +231,59 @@ function CarrelFigure() {
         s.sign = s.signT
         s.drawer = s.drawerT
       })
+    // How long the current phase lasts before the story moves on, or null
+    // when it waits for a click.
+    const hold = () => {
+      if (touring) {
+        if (phase === "rest") return 2.2
+        if (phase === "ask") return ASK
+        if (phase === "act") return ACT
+        return HOLD
+      }
+      return phase === "act" ? ACT : null
+    }
+    // Frames run only while a part is still easing to its target; between
+    // moves a timer wakes the figure for the next line of the story.
     const tick = (now: number) => {
+      frame = 0
       const dt = last ? Math.min((now - last) / 1000, 1 / 30) : 1 / 60
       last = now
-      t += dt
       const e = (sec: number) => 1 - Math.exp(-dt / sec)
+      let moving = false
       seats.forEach((s) => {
         s.light += (s.lightT - s.light) * e(0.25)
         s.sign += (s.signT - s.sign) * e(0.2)
         s.drawer += (s.drawerT - s.drawer) * e(0.18)
+        if (
+          Math.abs(s.lightT - s.light) > 0.004 ||
+          Math.abs(s.signT - s.sign) > 0.004 ||
+          Math.abs(s.drawerT - s.drawer) > 0.004
+        )
+          moving = true
       })
-      if (touring) {
-        if (phase === "rest" && t > 2.2) begin(0)
-        else if (phase === "ask" && t > ASK) advance()
-        else if (phase === "act" && t > ACT) advance()
-        else if (phase === "reply" && t > HOLD) advance()
-      } else if (phase === "act" && t > ACT) advance()
+      if (!moving) settle()
+      const limit = hold()
+      if (limit !== null && (now - since) / 1000 > limit) {
+        advance()
+        moving = true
+      }
       draw()
-      frame = visible ? requestAnimationFrame(tick) : 0
+      if (!visible) return
+      if (moving) {
+        frame = requestAnimationFrame(tick)
+        return
+      }
+      last = 0
+      const next = hold()
+      if (next !== null)
+        wake = setTimeout(
+          run,
+          Math.max(0, next * 1000 - (performance.now() - since))
+        )
     }
     const run = () => {
-      if (!frame && visible && !still) {
-        last = 0
-        frame = requestAnimationFrame(tick)
-      }
+      clearTimeout(wake)
+      if (!frame && visible && !still) frame = requestAnimationFrame(tick)
     }
     next.current = () => {
       touring = false
@@ -278,6 +321,7 @@ function CarrelFigure() {
       cancelAnimationFrame(frame)
       observer.disconnect()
       clearTimeout(idle)
+      clearTimeout(wake)
     }
   }, [])
 
@@ -294,7 +338,7 @@ function CarrelFigure() {
           event.preventDefault()
           next.current()
         }}
-        className="carrel-figure cursor-pointer outline-none"
+        className="carrel-figure cursor-pointer will-change-transform outline-none"
         dangerouslySetInnerHTML={{ __html: figureSvg }}
       />
       <figcaption className="flex min-h-12 flex-col gap-1">

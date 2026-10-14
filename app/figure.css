@@ -301,11 +301,9 @@
   opacity: 0;
   stroke: none;
   filter: blur(2.5px);
-  transition: opacity 0.6s;
 }
 .cl-bulb {
   opacity: 0.18;
-  transition: opacity 0.6s;
 }
 .carrel-figure [data-chat] {
   opacity: 0;

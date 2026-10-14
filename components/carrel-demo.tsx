@@ -21,6 +21,8 @@ import {
 } from "@/components/claude-code"
 
 const MCP = "plugin:infrastructure:carrel"
+// The symbols Claude Code's screen draws, so their font files come early too.
+const CLAUDE_GLYPHS = "·✢✳✶✻✽⏺⎿↓↑❯⏸◐│─⚠…✔✘▐▛█▜▝▘▖▗"
 
 // One turn, as a timeline. Each step lasts `ms`; the screen is a function of
 // the step and how far into it we are.
@@ -44,6 +46,19 @@ function lengthOf(step: Step, demo: Demo) {
   if (step === "type") return typingDuration(typing[demos.indexOf(demo)]) + 500
   if (step === "answer") return demo.reply.length * LINE_MS + 300
   return timing[step]
+}
+
+// What the screen shows at time t of a step. The clock runs every frame, but
+// the screen is drawn again only when this changes: a keystroke, a new reply
+// line, or the spinner's 100 ms tick.
+function viewOf(step: Step, demo: Demo, t: number) {
+  if (step === "type") {
+    const typed = typedAt(typing[demos.indexOf(demo)], t)
+    return `${typed.text}|${typed.composing}`
+  }
+  if (step === "answer") return String(Math.floor(t / LINE_MS))
+  if (step === "rest") return ""
+  return String(Math.floor(t / 100))
 }
 
 function runs(line: Run[]) {
@@ -139,12 +154,27 @@ function CarrelDemo() {
     return () => query.removeEventListener("change", update)
   }, [])
 
+  // The CJK web fonts come in many small files, split by character. Fetch
+  // every file the demos need in one go, before the first keystroke: a file
+  // that arrives mid-turn lays out the whole page again.
+  React.useEffect(() => {
+    if (!root.current) return
+    const text =
+      JSON.stringify(demos) + Object.values(zhuyin).join("") + CLAUDE_GLYPHS
+    const screen = root.current.querySelector(".font-mono") ?? root.current
+    for (const el of [screen, document.body])
+      document.fonts
+        .load(`1rem ${getComputedStyle(el).fontFamily}`, text)
+        .catch(() => {})
+  }, [])
+
   React.useEffect(() => {
     if (still) return
     let frame = 0
     let last = performance.now()
     let visible = true
     let local = { index, step, t: 0 }
+    let view = ""
     const observer = new IntersectionObserver(([entry]) => {
       visible = entry.isIntersecting
     })
@@ -172,7 +202,11 @@ function CarrelDemo() {
           setIndex(local.index)
           setStep(local.step)
         }
-        setT(local.t)
+        const now = `${local.index}:${local.step}:${viewOf(local.step, demos[local.index], local.t)}`
+        if (now !== view) {
+          view = now
+          setT(local.t)
+        }
       }
       frame = requestAnimationFrame(tick)
     }

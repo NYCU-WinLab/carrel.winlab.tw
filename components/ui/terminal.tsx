@@ -7,7 +7,8 @@ import { cn } from "@/lib/utils"
 // terminal-* palette (dark) in every site theme; only the outer edge is the
 // page's border, the same as browser's, so the two frames sit side by side. Rows are 1.25rem, about
 // 1.25 times the font, and East Asian characters take two cells, the way a
-// terminal lays them out.
+// terminal lays them out. The window is its own layer, so a demo that
+// redraws its rows repaints only the window, not the page around it.
 function Terminal({
   title,
   className,
@@ -20,7 +21,7 @@ function Terminal({
   return (
     <div
       className={cn(
-        "flex flex-col overflow-hidden rounded-menu border border-border bg-terminal font-mono text-body leading-5 text-terminal-foreground",
+        "flex flex-col overflow-hidden rounded-menu border border-border bg-terminal font-mono text-body leading-5 text-terminal-foreground will-change-transform",
         className
       )}
     >
