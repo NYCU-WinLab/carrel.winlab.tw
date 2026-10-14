@@ -41,19 +41,77 @@ function Terminal({
 
 // East Asian wide characters take two cells in a terminal. Web fonts draw
 // them narrower, so each one gets a two-cell box to keep the grid.
-const WIDE = /([ᄀ-ᅟ⺀-〾ぁ-㏿㐀-䶿一-鿿ꥠ-꥿가-힣豈-﫿︰-﹏＀-｠￠-￦]+)/
+const WIDE = /([ᄀ-ᅟ⺀-〾ぁ-㏿㐀-䶿一-鿿ꥠ-꥿가-힣豈-﫿︰-﹏＀-｠￠-￦]+)/
+
+// Block and box-drawing characters fill their whole cell in a terminal,
+// which draws them itself instead of taking them from the font (web fonts
+// often lack them or leave gaps between rows). Each quadrant block is the
+// four quarters it fills (top left, top right, bottom left, bottom right).
+const QUADRANTS: Record<string, string> = {
+  "▘": "1000",
+  "▝": "0100",
+  "▖": "0010",
+  "▗": "0001",
+  "▌": "1010",
+  "▐": "0101",
+  "▀": "1100",
+  "▄": "0011",
+  "█": "1111",
+  "▛": "1110",
+  "▜": "1101",
+  "▙": "1011",
+  "▟": "0111",
+  "▚": "1001",
+  "▞": "0110",
+}
+const DRAWN = /([─│▘▝▖▗▌▐▀▄█▛▜▙▟▚▞])/
+
+// One drawn cell: the character stays in the text for copying and screen
+// readers; its glyph is hidden and the cell's background draws the shape in
+// the text color.
+const QUARTERS = ["cell-tl", "cell-tr", "cell-bl", "cell-br"]
+
+function DrawnCell({ char }: { char: string }) {
+  const quarters = QUADRANTS[char]
+  return (
+    <span
+      className={cn(
+        "cell-drawn",
+        char === "─" && "cell-hline",
+        char === "│" && "cell-vline",
+        quarters && [
+          "cell-quad",
+          ...QUARTERS.filter((_, index) => quarters[index] === "1"),
+        ]
+      )}
+    >
+      {char}
+    </span>
+  )
+}
+
+function drawn(text: string): React.ReactNode {
+  if (!DRAWN.test(text)) return text
+  return text
+    .split(DRAWN)
+    .map((part, index) =>
+      index % 2 === 1 ? <DrawnCell key={index} char={part} /> : part
+    )
+}
 
 function cells(node: React.ReactNode): React.ReactNode {
   if (typeof node === "string") {
-    if (!WIDE.test(node)) return node
+    if (!WIDE.test(node)) return drawn(node)
     return node.split(WIDE).map((part, index) =>
-      index % 2 === 1
-        ? Array.from(part).map((char, i) => (
-            <span key={`${index}-${i}`} className="cell-wide">
-              {char}
-            </span>
-          ))
-        : part
+      index % 2 === 1 ? (
+        Array.from(part).map((char, i) => (
+          <span key={`${index}-${i}`} className="cell-wide">
+            {char}
+          </span>
+        ))
+      ) : (
+        <React.Fragment key={index}>{drawn(part)}</React.Fragment>
+      )
     )
   }
   if (Array.isArray(node))
@@ -73,6 +131,7 @@ const tones = {
   claude: "text-terminal-claude",
   shimmer: "text-terminal-shimmer",
   dim: "text-terminal-dim",
+  rule: "text-terminal-rule",
   soft: "text-terminal-soft",
   warn: "text-terminal-warn",
   select: "text-terminal-select",

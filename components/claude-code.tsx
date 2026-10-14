@@ -13,10 +13,9 @@ import {
 // such as "plugin:infrastructure:carrel".
 
 // The welcome block: the logo, the version, the model and plan, the folder.
-// The logo is Claude Code's three rows of quadrant blocks, drawn as pixels so
-// web fonts and line height cannot pull the rows apart.
-const LOGO =
-  "M3 0h1v1h-1zM3 1h1v1h-1zM4 0h1v1h-1zM5 0h1v1h-1zM4 1h1v1h-1zM6 0h1v1h-1zM7 0h1v1h-1zM6 1h1v1h-1zM7 1h1v1h-1zM8 0h1v1h-1zM9 0h1v1h-1zM8 1h1v1h-1zM9 1h1v1h-1zM10 0h1v1h-1zM11 0h1v1h-1zM10 1h1v1h-1zM11 1h1v1h-1zM12 0h1v1h-1zM13 0h1v1h-1zM12 1h1v1h-1zM14 0h1v1h-1zM15 0h1v1h-1zM14 1h1v1h-1zM15 1h1v1h-1zM1 2h1v1h-1zM2 2h1v1h-1zM3 2h1v1h-1zM3 3h1v1h-1zM4 2h1v1h-1zM5 2h1v1h-1zM4 3h1v1h-1zM5 3h1v1h-1zM6 2h1v1h-1zM7 2h1v1h-1zM6 3h1v1h-1zM7 3h1v1h-1zM8 2h1v1h-1zM9 2h1v1h-1zM8 3h1v1h-1zM9 3h1v1h-1zM10 2h1v1h-1zM11 2h1v1h-1zM10 3h1v1h-1zM11 3h1v1h-1zM12 2h1v1h-1zM13 2h1v1h-1zM12 3h1v1h-1zM13 3h1v1h-1zM14 2h1v1h-1zM15 2h1v1h-1zM14 3h1v1h-1zM15 3h1v1h-1zM16 2h1v1h-1zM17 2h1v1h-1zM3 4h1v1h-1zM5 4h1v1h-1zM13 4h1v1h-1zM15 4h1v1h-1z"
+// The logo is Claude Code's three rows of block characters, as it prints
+// them; every row is padded to the logo's 9 cells.
+const LOGO = [" ▐▛███▛█ ", "▝▜██████▀", " ▝▝   ▝▝ "]
 
 function Welcome({
   version = "2.1.296",
@@ -29,31 +28,37 @@ function Welcome({
   plan?: string
   cwd?: string
 }) {
+  const text = [
+    <>
+      <T bold>Claude Code</T> <T tone="dim">v{version}</T>
+    </>,
+    <T key="plan" tone="dim">
+      {model} · {plan}
+    </T>,
+    <T key="cwd" tone="dim">
+      {cwd}
+    </T>,
+  ]
   return (
-    <div className="flex items-center gap-cells-2 pb-5">
-      <svg
-        aria-hidden
-        viewBox="0 0 18 6"
-        preserveAspectRatio="none"
-        className="h-15 w-cells-9 shrink-0 fill-terminal-claude"
-        shapeRendering="crispEdges"
-      >
-        <path d={LOGO} />
-      </svg>
-      <div>
-        <Line>
-          <T bold>Claude Code</T> <T tone="dim">v{version}</T>
+    <div className="pb-5">
+      {LOGO.map((row, index) => (
+        <Line key={index}>
+          <T tone="claude">{row}</T>
+          {"  "}
+          {text[index]}
         </Line>
-        <Line>
-          <T tone="dim">
-            {model} · {plan}
-          </T>
-        </Line>
-        <Line>
-          <T tone="dim">{cwd}</T>
-        </Line>
-      </div>
+      ))}
     </div>
+  )
+}
+
+// A full-width rule of box-drawing characters, cut at the window's edge the
+// way the terminal cuts it at its last column.
+function Rule({ tone = "rule" }: { tone?: "rule" | "select" }) {
+  return (
+    <Line className="overflow-hidden whitespace-nowrap">
+      <T tone={tone}>{"─".repeat(240)}</T>
+    </Line>
   )
 }
 
@@ -187,7 +192,7 @@ function InputBox({
 }) {
   return (
     <div className="pt-5">
-      <div className="border-t border-terminal-rule" />
+      <Rule />
       <Line>
         {"❯ "}
         {value ? (
@@ -204,7 +209,7 @@ function InputBox({
           </>
         )}
       </Line>
-      <div className="border-t border-terminal-rule" />
+      <Rule />
       <Line className="flex justify-between gap-4">
         <T tone="dim" className="truncate">
           {"  "}⏸ manual mode on ·{" "}
@@ -229,12 +234,14 @@ function ToolUse({
   server: string
   /** The tool's name as Claude Code shows it, such as "Machine Create". */
   tool: string
-  about: string
+  /** The tool's description; Claude Code shows its first two rows, each
+   * cut with an ellipsis. */
+  about: string | string[]
   choice?: 0 | 1
 }) {
   return (
     <div className="pt-5">
-      <div className="border-t border-terminal-select" />
+      <Rule tone="select" />
       <Line indent={1}>
         <T tone="select" bold>
           Tool use
@@ -255,13 +262,14 @@ function ToolUse({
           Tool:
         </T>
       </Line>
-      <Line indent={1}>
-        <span className="inline-block border-l border-terminal-dim indent-1">
+      {(Array.isArray(about) ? about : [about]).map((line, index) => (
+        <Line key={index} indent={1} className="truncate">
+          <T tone="dim">│ </T>
           <T tone="dim" italic>
-            {about}
+            {line}
           </T>
-        </span>
-      </Line>
+        </Line>
+      ))}
       <Line indent={1}>
         <T tone="dim">(ctrl+o to expand description)</T>
       </Line>
@@ -309,7 +317,7 @@ function Choices({
 function Menu({ hint, children }: { hint: string; children: React.ReactNode }) {
   return (
     <div>
-      <div className="border-t border-terminal-select" />
+      <Rule tone="select" />
       {children}
       <Line indent={2} className="pt-5">
         <T tone="dim" italic>
@@ -432,6 +440,7 @@ export {
   PluginTabs,
   Prompt,
   Reply,
+  Rule,
   Screen,
   Spinner,
   ToolUse,
