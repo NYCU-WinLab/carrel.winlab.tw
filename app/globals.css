@@ -365,3 +365,54 @@
 @utility gap-cells-* {
   column-gap: calc(--value(integer) * 1ch);
 }
+
+@utility cell-drawn {
+  display: inline-block;
+  width: 1ch;
+  height: 1.25rem;
+  vertical-align: top;
+  -webkit-text-fill-color: transparent;
+  background-repeat: no-repeat;
+}
+
+@utility cell-quad {
+  background-image:
+    linear-gradient(var(--cell-tl, transparent) 0 0),
+    linear-gradient(var(--cell-tr, transparent) 0 0),
+    linear-gradient(var(--cell-bl, transparent) 0 0),
+    linear-gradient(var(--cell-br, transparent) 0 0);
+  background-size: 50% 50%;
+  background-position:
+    left top,
+    right top,
+    left bottom,
+    right bottom;
+}
+
+@utility cell-tl {
+  --cell-tl: currentColor;
+}
+
+@utility cell-tr {
+  --cell-tr: currentColor;
+}
+
+@utility cell-bl {
+  --cell-bl: currentColor;
+}
+
+@utility cell-br {
+  --cell-br: currentColor;
+}
+
+@utility cell-hline {
+  background-image: linear-gradient(currentColor 0 0);
+  background-size: 100% 1px;
+  background-position: center;
+}
+
+@utility cell-vline {
+  background-image: linear-gradient(currentColor 0 0);
+  background-size: 1px 100%;
+  background-position: center;
+}
