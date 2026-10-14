@@ -732,6 +732,102 @@ function Marketplace({
   )
 }
 
+// A search field in a menu, such as the one above /plugins > Discover: a
+// round box drawn with box characters, as wide as the screen.
+function SearchBox({ placeholder = "Search…" }: { placeholder?: string }) {
+  const edge = (left: string, right: string) => (
+    <Line indent={2} className="flex whitespace-nowrap">
+      <T tone="inactive">{left}</T>
+      <T tone="inactive" className="min-w-0 flex-1 overflow-hidden">
+        {"─".repeat(240)}
+      </T>
+      <T tone="inactive">{right}</T>
+    </Line>
+  )
+  return (
+    <div className="pb-5">
+      {edge("╭", "╮")}
+      <Line indent={2} className="flex">
+        <T tone="inactive">│</T>
+        <T tone="inactive" className="min-w-0 flex-1">
+          {" ⌕ "}
+          {placeholder}
+        </T>
+        <T tone="inactive">│</T>
+      </Line>
+      {edge("╰", "╯")}
+    </div>
+  )
+}
+
+type PluginItem = {
+  name: string
+  description: string
+  /** The version the marketplace lists, such as "v0002". */
+  version: string
+  installed?: boolean
+}
+
+// Claude Code cuts a description to the cells it has and ends it with "…".
+function cut(text: string, width: number) {
+  return text.length > width ? `${text.slice(0, width - 1)}…` : text
+}
+
+// The plugin list of /plugins > Discover: a count, then one row per plugin
+// with its description cut to `width` cells and its version. `shown` rows
+// are drawn; the rest sit under "more below".
+function PluginList({
+  items,
+  choice,
+  shown = items.length,
+  width = 60,
+}: {
+  items: PluginItem[]
+  choice: number
+  shown?: number
+  width?: number
+}) {
+  return (
+    <>
+      <Line indent={2} className="pb-5">
+        <T bold>Install Plugins</T>{" "}
+        <T tone="inactive">
+          ({choice + 1}/{items.length})
+        </T>
+      </Line>
+      {items.slice(0, shown).map((item, index) => {
+        const on = index === choice
+        return (
+          <div key={item.name} className="pb-5">
+            <Line indent={2}>
+              {on ? <T tone="permission">❯ </T> : "  "}
+              {item.installed ? <T tone="success">✔ </T> : "○ "}
+              <T
+                tone={
+                  item.installed ? "success" : on ? "permission" : undefined
+                }
+              >
+                {item.name}
+              </T>
+              {item.installed && <T tone="inactive"> (installed)</T>}
+            </Line>
+            <Line indent={4}>
+              <T tone="inactive">
+                {cut(item.description, width)} · {item.version}
+              </T>
+            </Line>
+          </div>
+        )
+      })}
+      {shown < items.length && (
+        <Line indent={2}>
+          <T tone="inactive">↓ more below</T>
+        </Line>
+      )}
+    </>
+  )
+}
+
 // A key: value row in a detail screen.
 function Field({
   name,
@@ -781,15 +877,18 @@ export {
   Menu,
   Notice,
   Output,
+  PluginList,
   PluginTabs,
   Prompt,
   Reply,
   Rule,
   Screen,
+  SearchBox,
   Spinner,
   ToolUse,
   ClaudeText,
   type ClaudeTone,
+  type PluginItem,
   doneVerb,
   spinnerVerb,
   Welcome,

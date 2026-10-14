@@ -455,6 +455,32 @@
   --cell-br: currentColor;
 }
 
+@utility cell-arc {
+  background-image: radial-gradient(
+    ellipse 50% 50% at var(--cell-arc-at),
+    transparent calc(100% - 1.5px),
+    currentColor calc(100% - 1px),
+    currentColor 100%,
+    transparent calc(100% + 0.5px)
+  );
+}
+
+@utility cell-arc-tl {
+  --cell-arc-at: 100% 100%;
+}
+
+@utility cell-arc-tr {
+  --cell-arc-at: 0% 100%;
+}
+
+@utility cell-arc-bl {
+  --cell-arc-at: 100% 0%;
+}
+
+@utility cell-arc-br {
+  --cell-arc-at: 0% 0%;
+}
+
 @utility cell-hline {
   background-image: linear-gradient(currentColor 0 0);
   background-size: 100% 1px;

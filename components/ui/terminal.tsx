@@ -65,7 +65,15 @@ const QUADRANTS: Record<string, string> = {
   "▚": "1001",
   "▞": "0110",
 }
-const DRAWN = /([─│▘▝▖▗▌▐▀▄█▛▜▙▟▚▞])/
+const DRAWN = /([─│╭╮╰╯▘▝▖▗▌▐▀▄█▛▜▙▟▚▞])/
+// A round corner is a quarter of an ellipse centred on the cell corner its
+// two lines point away from.
+const ARCS: Record<string, string> = {
+  "╭": "cell-arc-tl",
+  "╮": "cell-arc-tr",
+  "╰": "cell-arc-bl",
+  "╯": "cell-arc-br",
+}
 
 // One drawn cell: the character stays in the text for copying and screen
 // readers; its glyph is hidden and the cell's background draws the shape in
@@ -80,6 +88,7 @@ function DrawnCell({ char }: { char: string }) {
         "cell-drawn",
         char === "─" && "cell-hline",
         char === "│" && "cell-vline",
+        ARCS[char] && ["cell-arc", ARCS[char]],
         quarters && [
           "cell-quad",
           ...QUARTERS.filter((_, index) => quarters[index] === "1"),
