@@ -18,6 +18,7 @@ import {
   Screen,
   Welcome,
 } from "@/components/claude-code"
+import { ConsentScreen } from "@/components/consent-screen"
 
 // The four install screens, as Claude Code draws them. Wording comes from
 // Claude Code 2.1.296; the marketplace row is the one WinLab's claude.ai
@@ -156,42 +157,6 @@ function McpScreen() {
         <Choices items={["Authenticate", "Disable"]} choice={0} />
       </Menu>
     </Terminal>
-  )
-}
-
-// Carrel's own consent page (internal/carrel/auth.go), inside a browser.
-function ConsentScreen() {
-  return (
-    <div className="consent c-frame flex flex-col overflow-hidden rounded-menu">
-      <div className="flex h-10 items-center gap-2 px-4">
-        <span aria-hidden className="c-address size-3 rounded-full" />
-        <span aria-hidden className="c-address size-3 rounded-full" />
-        <span aria-hidden className="c-address size-3 rounded-full" />
-        <span className="c-address c-muted ml-4 flex-1 truncate rounded-control px-4">
-          carrel.winlab.tw/oauth/consent
-        </span>
-      </div>
-      <div className="flex justify-center px-6 py-16">
-        <div className="flex w-full max-w-sm flex-col gap-4">
-          <h4 className="text-title font-semibold">連接 Carrel</h4>
-          <p className="c-muted">
-            允許{" "}
-            <strong className="font-semibold">
-              Claude Code ({"plugin:infrastructure:carrel"})
-            </strong>{" "}
-            以你的帳號權限管理 Carrel 資源。
-          </p>
-          <p className="c-muted">
-            登入會持續保留，關閉瀏覽器後仍可使用。你可以在 WinLab
-            帳號的應用程式頁面撤銷存取。
-          </p>
-          <div className="flex justify-end gap-2 pt-2">
-            <span className="c-button px-6 py-2">取消</span>
-            <span className="c-button c-primary px-6 py-2">允許</span>
-          </div>
-        </div>
-      </div>
-    </div>
   )
 }
 

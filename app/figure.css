@@ -2,7 +2,7 @@
    figure, drawn straight on the page. Paper is the page background, so the
    drawing has no card of its own; text uses the site's mono font. The
    figure keeps the kit's grey ramp and lamp color; tokens:check skips this
-   file like app/terminal.css. */
+   file. */
 .carrel-figure {
   --anatomy-page: #f2f2ef;
   --anatomy-card: #fbfbfa;
