@@ -3,16 +3,43 @@
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
-import {
-  TerminalLine as Line,
-  TerminalText as T,
-} from "@/components/ui/terminal"
+import { TerminalLine as Line, TerminalText } from "@/components/ui/terminal"
 
 // Claude Code's screen, piece by piece, for demos and install guides. Layout,
 // glyphs, wording and colors follow Claude Code 2.1.296 in a fresh config
 // (no plugins, settings or statusline of our own); what a demo changes is
 // passed in as props. MCP servers are named the way Claude Code names them,
 // such as "plugin:infrastructure:carrel".
+
+// Claude Code's own colors (its dark theme), as claude-* tokens.
+const tones = {
+  claude: "text-claude",
+  shimmer: "text-claude-shimmer",
+  permission: "text-claude-permission",
+  text: "text-claude-text",
+  inactive: "text-claude-inactive",
+  subtle: "text-claude-subtle",
+  border: "text-claude-prompt-border",
+  success: "text-claude-success",
+  error: "text-claude-error",
+  warning: "text-claude-warning",
+} as const
+
+type ClaudeTone = keyof typeof tones
+
+// A run of text in one of Claude Code's colors.
+function ClaudeText({
+  tone,
+  className,
+  ...props
+}: Omit<React.ComponentProps<typeof TerminalText>, "tone"> & {
+  tone?: ClaudeTone
+}) {
+  return (
+    <TerminalText className={cn(tone && tones[tone], className)} {...props} />
+  )
+}
+const T = ClaudeText
 
 // The welcome block: the logo, the version, the model and plan, the folder.
 // The logo is Claude Code's three rows of block characters, as it prints
@@ -32,12 +59,12 @@ function Welcome({
 }) {
   const text = [
     <>
-      <T bold>Claude Code</T> <T tone="dim">v{version}</T>
+      <T bold>Claude Code</T> <T tone="inactive">v{version}</T>
     </>,
-    <T key="plan" tone="dim">
+    <T key="plan" tone="inactive">
       {model} · {plan}
     </T>,
-    <T key="cwd" tone="dim">
+    <T key="cwd" tone="inactive">
       {cwd}
     </T>,
   ]
@@ -56,7 +83,7 @@ function Welcome({
 
 // A full-width rule of box-drawing characters, cut at the window's edge the
 // way the terminal cuts it at its last column.
-function Rule({ tone = "rule" }: { tone?: "rule" | "select" }) {
+function Rule({ tone = "border" }: { tone?: "border" | "permission" }) {
   return (
     <Line className="overflow-hidden whitespace-nowrap">
       <T tone={tone}>{"─".repeat(240)}</T>
@@ -74,8 +101,8 @@ function Notice({
 }) {
   return (
     <Line>
-      <T tone="warn">⚠ {children}</T>
-      {hint && <T tone="dim"> · {hint}</T>}
+      <T tone="warning">⚠ {children}</T>
+      {hint && <T tone="inactive"> · {hint}</T>}
     </Line>
   )
 }
@@ -83,9 +110,9 @@ function Notice({
 // What the member typed, after they pressed Enter.
 function Prompt({ children }: { children: React.ReactNode }) {
   return (
-    <Line className="bg-terminal-prompt">
-      <T tone="dim">❯ </T>
-      <T tone="white">{children}</T>
+    <Line className="bg-claude-user-message">
+      <T tone="inactive">❯ </T>
+      <T tone="text">{children}</T>
     </Line>
   )
 }
@@ -94,7 +121,7 @@ function Prompt({ children }: { children: React.ReactNode }) {
 function Output({ children }: { children: React.ReactNode }) {
   return (
     <Line indent={2} className="pb-5">
-      <T tone="dim">⎿ </T> {children}
+      <T tone="inactive">⎿ </T> {children}
     </Line>
   )
 }
@@ -103,11 +130,12 @@ function Output({ children }: { children: React.ReactNode }) {
 function McpCall({ server, done }: { server: string; done?: boolean }) {
   return done ? (
     <Line indent={2}>
-      <T tone="dim">Called {server} (ctrl+o to expand)</T>
+      <T tone="inactive">Called {server} (ctrl+o to expand)</T>
     </Line>
   ) : (
     <Line>
-      <T tone="dim">⏺</T> Calling {server}… <T tone="dim">(ctrl+o to expand)</T>
+      <T tone="inactive">⏺</T> Calling {server}…{" "}
+      <T tone="inactive">(ctrl+o to expand)</T>
     </Line>
   )
 }
@@ -121,7 +149,7 @@ function Reply({ lines }: { lines: React.ReactNode[] }) {
           // The dot hangs in the first two cells, so a wrapped line lines
           // up under the text, not under the dot.
           <Line key={index} className="flex">
-            <T tone="white" className="w-cells-2 shrink-0">
+            <T tone="text" className="w-cells-2 shrink-0">
               ⏺
             </T>
             <T className="min-w-0">{line}</T>
@@ -435,7 +463,7 @@ function Spinner({
       : []),
   ]
   const label = thinking !== undefined && (
-    <T className="animate-terminal-thinking">{thinkingLabel(thinking)}</T>
+    <T className="animate-claude-thinking">{thinkingLabel(thinking)}</T>
   )
 
   return (
@@ -444,7 +472,7 @@ function Spinner({
         {glyph}
       </T>
       {mode === "tool-use" ? (
-        <T className="animate-terminal-claude">{text.join("")}</T>
+        <T className="animate-claude-pulse">{text.join("")}</T>
       ) : (
         text.map((char, index) => (
           <T key={index} tone={lit(index) ? "shimmer" : "claude"}>
@@ -454,7 +482,7 @@ function Spinner({
       )}
       {"  "}
       {parts.length > 0 ? (
-        <T tone="dim">
+        <T tone="inactive">
           ({parts.join(" · ")}
           {label && <> · {label}</>})
         </T>
@@ -480,7 +508,7 @@ function Done({
 }) {
   return (
     <Line className="pt-5">
-      <T tone="dim">
+      <T tone="inactive">
         <span className="inline-block w-cells-2">✻</span>
         {verb ?? doneVerb(seed + time)} for {duration(seconds)} · done {time}
       </T>
@@ -513,7 +541,7 @@ function InputBox({
         ) : busy ? null : (
           <>
             <T inverse>{placeholder.slice(0, 1)}</T>
-            <T tone="dim" faint>
+            <T tone="inactive" faint>
               {placeholder.slice(1)}
             </T>
           </>
@@ -521,11 +549,11 @@ function InputBox({
       </Line>
       <Rule />
       <Line className="flex justify-between gap-4">
-        <T tone="dim" className="truncate">
+        <T tone="inactive" className="truncate">
           {"  "}⏸ manual mode on ·{" "}
           {busy ? "esc to interrupt" : "? for shortcuts"} · ← for agents
         </T>
-        <T tone="dim" className="hidden shrink-0 sm:inline">
+        <T tone="inactive" className="hidden shrink-0 sm:inline">
           ◐ medium · /effort
         </T>
       </Line>
@@ -551,9 +579,9 @@ function ToolUse({
 }) {
   return (
     <div className="pt-5">
-      <Rule tone="select" />
+      <Rule tone="permission" />
       <Line indent={1}>
-        <T tone="select" bold>
+        <T tone="permission" bold>
           Tool use
         </T>
       </Line>
@@ -561,7 +589,7 @@ function ToolUse({
         <T bold>
           {server} — {tool} Tool:
         </T>
-        <T tone="dim"> (MCP)</T>
+        <T tone="inactive"> (MCP)</T>
       </Line>
       <Line indent={1} className="pt-5">
         <T italic>
@@ -574,21 +602,21 @@ function ToolUse({
       </Line>
       {(Array.isArray(about) ? about : [about]).map((line, index) => (
         <Line key={index} indent={1} className="truncate">
-          <T tone="dim">│ </T>
-          <T tone="dim" italic>
+          <T tone="inactive">│ </T>
+          <T tone="inactive" italic>
             {line}
           </T>
         </Line>
       ))}
       <Line indent={1}>
-        <T tone="dim">(ctrl+o to expand description)</T>
+        <T tone="inactive">(ctrl+o to expand description)</T>
       </Line>
       <Line indent={1} className="pt-5">
         Do you want to proceed?
       </Line>
       <Choices items={["Yes", "No"]} choice={choice} indent={1} />
       <Line indent={1} className="pt-5">
-        <T tone="dim">Esc to cancel · Tab to amend</T>
+        <T tone="inactive">Esc to cancel · Tab to amend</T>
       </Line>
     </div>
   )
@@ -612,9 +640,9 @@ function Choices({
         const on = index === choice
         return (
           <Line key={item} indent={indent}>
-            {on ? <T tone="select">❯ </T> : "  "}
-            {numbered && <T tone="dim">{index + 1}. </T>}
-            {on ? <T tone="select">{item}</T> : item}
+            {on ? <T tone="permission">❯ </T> : "  "}
+            {numbered && <T tone="inactive">{index + 1}. </T>}
+            {on ? <T tone="permission">{item}</T> : item}
           </Line>
         )
       })}
@@ -627,10 +655,10 @@ function Choices({
 function Menu({ hint, children }: { hint: string; children: React.ReactNode }) {
   return (
     <div>
-      <Rule tone="select" />
+      <Rule tone="permission" />
       {children}
       <Line indent={2} className="pt-5">
-        <T tone="dim" italic>
+        <T tone="inactive" italic>
           {hint}
         </T>
       </Line>
@@ -650,7 +678,7 @@ const pluginTabs = [
 function PluginTabs({ current }: { current: (typeof pluginTabs)[number] }) {
   return (
     <Line indent={2} className="pb-5">
-      <T tone="select" bold>
+      <T tone="permission" bold>
         Plugins
       </T>
       {"  "}
@@ -686,13 +714,13 @@ function Marketplace({
   return (
     <div className="pb-5">
       <Line indent={2}>
-        {selected ? <T tone="select">❯ </T> : "  "}● <T bold>{name}</T>
+        {selected ? <T tone="permission">❯ </T> : "  "}● <T bold>{name}</T>
       </Line>
       <Line indent={6}>
-        <T tone="dim">{source}</T>
+        <T tone="inactive">{source}</T>
       </Line>
       <Line indent={6}>
-        <T tone="dim">{detail}</T>
+        <T tone="inactive">{detail}</T>
       </Line>
     </div>
   )
@@ -754,6 +782,8 @@ export {
   Screen,
   Spinner,
   ToolUse,
+  ClaudeText,
+  type ClaudeTone,
   doneVerb,
   spinnerVerb,
   Welcome,

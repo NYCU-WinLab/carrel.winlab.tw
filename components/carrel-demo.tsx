@@ -4,8 +4,9 @@ import * as React from "react"
 
 import { demos, type Demo, type Run } from "@/lib/demos"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { TerminalText as T, Terminal } from "@/components/ui/terminal"
+import { Terminal } from "@/components/ui/terminal"
 import {
+  ClaudeText as T,
   Done,
   InputBox,
   McpCall,
