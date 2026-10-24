@@ -84,7 +84,7 @@ const demos: Demo[] = [
   },
   {
     id: "k8s",
-    label: "玩 k8s",
+    label: "k8s",
     prompt: "開三台機器，架一個 k3s 叢集給我玩",
     tool: "Deployment Apply",
     about:
