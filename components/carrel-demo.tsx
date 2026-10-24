@@ -220,7 +220,7 @@ function CarrelDemo() {
 
   return (
     <div ref={root} className="flex flex-col gap-6">
-      {/* Five tabs are wider than a phone; the row scrolls on its own. */}
+      {/* Eight tabs are wider than a phone; the row scrolls on its own. */}
       <div className="-mx-6 overflow-x-auto px-6">
         <Tabs
           value={demo.id}

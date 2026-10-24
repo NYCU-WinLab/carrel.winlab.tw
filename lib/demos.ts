@@ -83,6 +83,69 @@ const demos: Demo[] = [
     ],
   },
   {
+    id: "k8s",
+    label: "玩 k8s",
+    prompt: "開三台機器，架一個 k3s 叢集給我玩",
+    tool: "Deployment Apply",
+    about:
+      "Create a group of machines, connections and publications in one call when authorized. Use deployment_plan only when a preview is wanted, then apply the same specification…",
+    seconds: 96,
+    tokens: 1384,
+    reply: [
+      [
+        { text: "k3s 叢集好了：" },
+        { text: "1 台 server、2 台 agent", bold: true },
+        { text: "，各 2 vCPU、2 GiB，swap 關掉。" },
+      ],
+      [{ text: "3 個節點都 Ready。kubectl 和 k9s 裝在 k3s-server 上。" }],
+      [{ text: "6443 不對外開，kubeconfig 走 SSH 通道：" }],
+      [],
+      [{ text: "ssh k3s-server.alice", tone: "permission" }],
+    ],
+  },
+  {
+    id: "deploy",
+    label: "自動部署",
+    prompt: "我的 repo 每次 push 就自動部署到 web",
+    tool: "App Link",
+    about:
+      "Bind a GitHub repository branch to a machine so every push deploys (PLAN 7.9). GitHub Actions builds; carrel stores the release; carrel-deployd in the machine switches it…",
+    seconds: 41,
+    tokens: 812,
+    reply: [
+      [
+        { text: "web 綁好了 " },
+        { text: "alice/site", tone: "permission" },
+        { text: " 的 main 分支。" },
+      ],
+      [{ text: "部署程式裝在 web 上，workflow 也提交進 repo 了。" }],
+      [
+        { text: "之後每次 push 都會自動上線；健康檢查沒過就" },
+        { text: "退回上一版", bold: true },
+        { text: "。" },
+      ],
+    ],
+  },
+  {
+    id: "vpn",
+    label: "連內網",
+    prompt: "讓我的筆電直接連進內網",
+    tool: "Vpn Client Add",
+    about:
+      "Connect a device or an agent to the tenant's network over WireGuard, for traffic SSH port forwarding does not cover: UDP, many ports, a browser on internal services…",
+    seconds: 14,
+    tokens: 329,
+    reply: [
+      [
+        { text: "筆電加進 " },
+        { text: "WireGuard", bold: true },
+        { text: " 了，私鑰只留在你的筆電上。" },
+      ],
+      [{ text: "設定檔存在 ~/carrel-alice.conf，匯入 WireGuard 後，" }],
+      [{ text: "瀏覽器就能直接開 db、k3s-server 這些內網機器。" }],
+    ],
+  },
+  {
     id: "snapshot",
     label: "存快照",
     prompt: "升級前幫 sandbox 存個快照",
@@ -157,6 +220,24 @@ const zhuyin: Record<string, string> = {
   明: "ㄇㄧㄥˊ",
   天: "ㄊㄧㄢ",
   醒: "ㄒㄧㄥˇ",
+  三: "ㄙㄢ",
+  架: "ㄐㄧㄚˋ",
+  叢: "ㄘㄨㄥˊ",
+  集: "ㄐㄧˊ",
+  玩: "ㄨㄢˊ",
+  每: "ㄇㄟˇ",
+  次: "ㄘˋ",
+  就: "ㄐㄧㄡˋ",
+  自: "ㄗˋ",
+  動: "ㄉㄨㄥˋ",
+  部: "ㄅㄨˋ",
+  署: "ㄕㄨˇ",
+  筆: "ㄅㄧˇ",
+  電: "ㄉㄧㄢˋ",
+  直: "ㄓˊ",
+  接: "ㄐㄧㄝ",
+  進: "ㄐㄧㄣˋ",
+  內: "ㄋㄟˋ",
 }
 
 export { demos, type Demo, type Run, zhuyin }
