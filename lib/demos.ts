@@ -85,7 +85,7 @@ const demos: Demo[] = [
   {
     id: "k8s",
     label: "k8s",
-    prompt: "開三台機器，架一個 k3s 叢集給我玩",
+    prompt: "開三台機器，架一個 k3s 叢集",
     tool: "Deployment Apply",
     about:
       "Create a group of machines, connections and publications in one call when authorized. Use deployment_plan only when a preview is wanted, then apply the same specification…",
@@ -224,7 +224,6 @@ const zhuyin: Record<string, string> = {
   架: "ㄐㄧㄚˋ",
   叢: "ㄘㄨㄥˊ",
   集: "ㄐㄧˊ",
-  玩: "ㄨㄢˊ",
   每: "ㄇㄟˇ",
   次: "ㄘˋ",
   就: "ㄐㄧㄡˋ",
