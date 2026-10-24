@@ -1,5 +1,13 @@
-import * as React from "react"
+"use client"
 
+import * as React from "react"
+import { ChevronDown } from "lucide-react"
+
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
 import { TerminalLine as Line, Terminal } from "@/components/ui/terminal"
 import {
   ClaudeText as T,
@@ -22,6 +30,8 @@ import { ConsentScreen } from "@/components/consent-screen"
 // Claude Code 2.1.296; the marketplace row is the one WinLab's claude.ai
 // organization syncs into every member's Claude Code.
 
+// Each step is a title; its screen opens on a click, so the list reads as
+// five short lines first.
 function Step({
   n,
   title,
@@ -32,12 +42,20 @@ function Step({
   children: React.ReactNode
 }) {
   return (
-    <li className="flex flex-col gap-4 border-t border-border pt-6">
-      <h3 className="flex gap-4 font-medium">
-        <span className="text-muted-foreground tabular-nums">{n}</span>
-        <span>{title}</span>
-      </h3>
-      {children}
+    <li className="border-t border-border">
+      <Collapsible>
+        <CollapsibleTrigger className="group flex w-full gap-4 py-4 text-left font-medium">
+          <span className="text-muted-foreground tabular-nums">{n}</span>
+          <span className="flex-1">{title}</span>
+          <ChevronDown
+            aria-hidden
+            className="mt-1 size-4 shrink-0 text-muted-foreground transition-transform duration-overlay group-data-panel-open:rotate-180 motion-reduce:transition-none"
+          />
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          <div className="flex flex-col gap-4 pb-6">{children}</div>
+        </CollapsibleContent>
+      </Collapsible>
     </li>
   )
 }
@@ -229,7 +247,7 @@ function ConnectedScreen() {
 
 function InstallSteps() {
   return (
-    <ol className="flex flex-col gap-12">
+    <ol className="flex flex-col border-b border-border">
       <Step
         n={1}
         title={
