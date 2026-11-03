@@ -1,8 +1,8 @@
 name: release
 
-# A push to main deploys the image ci passed to VM 117 through land: ship
-# retags tree-<tree> as sha-<commit> and main, then carrel-deployd on the VM
-# runs deploy/carrel-start.sh.
+# A push to main retags the image ci passed (tree-<tree>) as sha-<commit> and
+# main. The public site is served by Carrel (CT 101), which this does not
+# deploy.
 on:
   push:
     branches: [main]
@@ -17,6 +17,4 @@ jobs:
       id-token: write
     with:
       images: '["ghcr.io/nycu-winlab/carrel.winlab.tw"]'
-      target: land
-      tenant: compose
-      app: carrel-site
+      target: none

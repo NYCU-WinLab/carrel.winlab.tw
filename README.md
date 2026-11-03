@@ -35,7 +35,7 @@ bun run dev
 
 ## Deploy
 
-The pull request builds and smoke-tests the image (`deploy/smoke.sh`). A merge to `main` retags it `sha-<commit>` and `:main`, and land (zyx1121/land) deploys it to VM 117: carrel-deployd runs `deploy/carrel-start.sh` against `/opt/carrel-site`. The version corner reads `SITE_VERSION` at run time.
+The pull request builds and smoke-tests the image (`deploy/smoke.sh`). A merge to `main` retags it `sha-<commit>` and `:main`. The public site is the static build served by Carrel, so it is published with Carrel, not from this image. In the image, the version corner reads `SITE_VERSION` at run time.
 
 ```bash
 SITE_VERSION=sha-abc1234 SITE_BIND=0.0.0.0:3110 docker compose up -d
