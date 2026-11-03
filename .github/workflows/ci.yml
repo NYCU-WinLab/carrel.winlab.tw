@@ -9,7 +9,7 @@ jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: oven-sh/setup-bun@v2
       - run: bun install --frozen-lockfile
       - run: bun run tokens:check
@@ -18,17 +18,20 @@ jobs:
       - run: bun run format:check
       - run: bun run build
 
-  smoke:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Start the image with compose
-        run: docker compose up -d --build --wait
-      - name: Serve the page with its figure and status section, and a real 404
-        run: |
-          curl -sf localhost:8080/ | grep -q "Carrel"
-          curl -sf localhost:8080/ | grep -q "claudeai-nycu-winlab-marketplace"
-          curl -sf localhost:8080/ | grep -q "carrel-figure"
-          curl -sf localhost:8080/ | grep -q "叢集狀態"
-          test "$(curl -s -o /dev/null -w '%{http_code}' localhost:8080/missing)" = 404
-          ! curl -sI localhost:8080/ | grep -qi "server: nginx/"
+  image:
+    uses: zyx1121/.github/.github/workflows/image.yml@main
+    permissions:
+      contents: read
+      packages: write
+    with:
+      images: '[{"name": "ghcr.io/nycu-winlab/carrel.winlab.tw"}]'
+      smoke: bash deploy/smoke.sh
+
+  promote:
+    needs: [check, image]
+    uses: zyx1121/.github/.github/workflows/promote.yml@main
+    permissions:
+      contents: read
+      packages: write
+    with:
+      images: '["ghcr.io/nycu-winlab/carrel.winlab.tw"]'

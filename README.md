@@ -35,10 +35,10 @@ bun run dev
 
 ## Deploy
 
-Each push to `main` publishes `ghcr.io/nycu-winlab/carrel.winlab.tw:sha-<commit>` and `:main`.
+The pull request builds and smoke-tests the image (`deploy/smoke.sh`). A merge to `main` retags it `sha-<commit>` and `:main`, and land (zyx1121/land) deploys it to VM 117: carrel-deployd runs `deploy/carrel-start.sh` against `/opt/carrel-site`. The version corner reads `SITE_VERSION` at run time.
 
 ```bash
-SITE_VERSION=sha-abc1234 SITE_BIND=10.10.10.117:3110 docker compose up -d
+SITE_VERSION=sha-abc1234 SITE_BIND=0.0.0.0:3110 docker compose up -d
 ```
 
 The gateway sends the Carrel paths (`/mcp`, `/oauth/`, `/.well-known/`, `/healthz`, `/internal/`, `/apps/`) to Carrel and every other path to this image.
